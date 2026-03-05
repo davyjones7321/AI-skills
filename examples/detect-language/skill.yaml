@@ -1,0 +1,88 @@
+skill:
+  id: detect-language
+  version: 1.0.0
+  name: Language Detector
+  description: |
+    Detects the language of input text and returns the language name,
+    ISO 639-1 code, and a confidence score. Supports 50+ languages
+    including mixed-language text detection.
+  author: ai-skills-team
+  license: MIT
+  tags: [nlp, language-detection, i18n, text, multilingual]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text whose language should be detected
+      required: true
+
+  outputs:
+    - name: language
+      type: string
+      description: Full name of the detected language (e.g. "French")
+
+    - name: language_code
+      type: string
+      description: ISO 639-1 two-letter language code (e.g. "fr")
+
+    - name: confidence
+      type: number
+      description: Confidence score from 0.0 to 1.0
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a multilingual language identification system.
+      Identify the primary language of the given text.
+      Always respond in valid JSON format.
+    prompt_template: |
+      Detect the language of the following text.
+
+      Respond in JSON with:
+      - language: full language name in English (e.g. "Spanish")
+      - language_code: ISO 639-1 code (e.g. "es")
+      - confidence: number between 0.0 and 1.0
+
+      Text:
+      {text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 500
+    avg_cost_per_call_usd: 0.001
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: english
+        description: Detect English text
+        input:
+          text: "The quick brown fox jumps over the lazy dog."
+        expected:
+          language: "English"
+          language_code: "en"
+          confidence_min: 0.9
+
+      - id: french
+        description: Detect French text
+        input:
+          text: "Bonjour le monde, comment allez-vous aujourd'hui?"
+        expected:
+          language: "French"
+          language_code: "fr"
+          confidence_min: 0.9
+
+      - id: german
+        description: Detect German text
+        input:
+          text: "Guten Morgen, wie geht es Ihnen heute? Das Wetter ist sehr gut."
+        expected:
+          language: "German"
+          language_code: "de"
+          confidence_min: 0.9

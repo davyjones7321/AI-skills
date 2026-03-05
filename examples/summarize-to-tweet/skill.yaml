@@ -1,0 +1,91 @@
+skill:
+  id: summarize-to-tweet
+  version: 1.0.0
+  name: Tweet Summarizer
+  description: |
+    Condenses any text into a tweet-sized summary (max 280 characters).
+    Captures the core message while staying within character limits.
+    Optionally adds relevant hashtags.
+  author: ai-skills-team
+  license: MIT
+  tags: [summarization, social-media, twitter, content, nlp]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to condense into a tweet
+      required: true
+
+    - name: include_hashtags
+      type: boolean
+      description: Whether to include relevant hashtags
+      required: false
+      default: true
+
+    - name: tone
+      type: string
+      description: Desired tone of the tweet
+      required: false
+      default: professional
+      enum: [professional, casual, witty, formal]
+
+  outputs:
+    - name: tweet
+      type: string
+      description: The condensed tweet (max 280 characters)
+
+    - name: character_count
+      type: integer
+      description: Number of characters in the tweet
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a social media expert who writes viral, concise tweets.
+      Every tweet MUST be 280 characters or fewer — this is a hard limit.
+      Capture the most important message. Be engaging and shareable.
+      Always respond in valid JSON format.
+    prompt_template: |
+      Condense the following text into a single tweet (max 280 characters).
+
+      Tone: {tone}
+      Include hashtags: {include_hashtags}
+
+      Respond in JSON with:
+      - tweet: the tweet text (MUST be 280 characters or fewer)
+      - character_count: the number of characters
+
+      Text to condense:
+      {text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 600
+    avg_cost_per_call_usd: 0.001
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: tech-article
+        description: Summarize a tech article into a tweet
+        input:
+          text: "Researchers at Stanford University have developed a new AI model that can generate photorealistic images from text descriptions in under 2 seconds. The model, called FastDiffusion, uses a novel architecture that reduces the number of denoising steps from 50 to just 4, while maintaining image quality. The team plans to open-source the model next month."
+          include_hashtags: true
+          tone: professional
+        expected:
+          character_count_max: 280
+
+      - id: short-text
+        description: Summarize already-short text
+        input:
+          text: "Python 3.13 was released today with improved error messages."
+          include_hashtags: false
+          tone: casual
+        expected:
+          character_count_max: 280

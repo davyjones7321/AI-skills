@@ -1,0 +1,83 @@
+skill:
+  id: summarize-document
+  version: 1.0.0
+  name: Document Summarizer
+  description: |
+    Summarizes a document into a concise summary and key bullet points.
+    Works best on documents under 10,000 words.
+  author: ai-skills-team
+  license: MIT
+  tags: [summarization, nlp, text, productivity]
+
+  inputs:
+    - name: document
+      type: string
+      description: The full text of the document to summarize
+      required: true
+
+    - name: max_words
+      type: integer
+      description: Maximum number of words in the summary
+      required: false
+      default: 150
+      minimum: 30
+      maximum: 500
+
+    - name: language
+      type: string
+      description: Language for the output summary
+      required: false
+      default: english
+
+  outputs:
+    - name: summary
+      type: string
+      description: Concise summary of the document
+
+    - name: key_points
+      type: array
+      items: string
+      description: 3 to 5 key takeaways from the document
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are an expert summarizer. Be concise, accurate, and neutral.
+      Never add information not present in the original document.
+    prompt_template: |
+      Summarize the following document in under {max_words} words.
+      Write the summary in {language}.
+
+      Respond in exactly this format:
+      SUMMARY: [your summary here]
+      KEY_POINTS:
+      - [key point 1]
+      - [key point 2]
+      - [key point 3]
+
+      Document:
+      {document}
+    output_parser: structured
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 1100
+    avg_cost_per_call_usd: 0.003
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: short-article
+        description: Summarize a short article
+        input:
+          document: "Researchers at MIT announced a breakthrough in battery technology today. The new lithium-silicon design offers three times the energy density of conventional lithium-ion batteries. Field tests showed the batteries retained 95% capacity after 1,000 charge cycles. The team expects commercial applications within five years, starting with electric vehicles."
+          max_words: 50
+        expected:
+          summary_contains: [battery, MIT]
+          key_points_count_min: 2
+          key_points_count_max: 5

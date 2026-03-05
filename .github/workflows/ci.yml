@@ -1,0 +1,57 @@
+name: CI — Validate Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate All Skills
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate all example skills
+        run: |
+          echo "🔍 Validating all example skills..."
+          FAILED=0
+          for skill in examples/*/skill.yaml; do
+            echo ""
+            echo "━━━ Validating: $skill ━━━"
+            if python sdk/cli.py validate "$skill"; then
+              echo "✅ PASS"
+            else
+              echo "❌ FAIL"
+              FAILED=1
+            fi
+          done
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ Some skills failed validation."
+            exit 1
+          fi
+          echo ""
+          echo "✅ All skills passed validation."
+
+      - name: Run security audit on all skills
+        run: |
+          echo "🔒 Running security audit..."
+          for skill in examples/*/skill.yaml; do
+            echo ""
+            echo "━━━ Auditing: $skill ━━━"
+            python sdk/cli.py validate --audit "$skill" || true
+          done
+          echo ""
+          echo "✅ Security audit complete."

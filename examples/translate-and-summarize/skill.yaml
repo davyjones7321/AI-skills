@@ -1,0 +1,99 @@
+skill:
+  id: translate-and-summarize
+  version: 1.0.0
+  name: Translate and Summarize
+  description: |
+    A chain skill that detects the language of input text, translates it
+    to English if needed, then summarizes it into key points.
+    Combines the translate-text and summarize-document skills.
+  author: ai-skills-team
+  license: MIT
+  tags: [translation, summarization, chain, multilingual, nlp]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to translate and summarize
+      required: true
+
+    - name: max_points
+      type: integer
+      description: Maximum number of key points to extract
+      required: false
+      default: 5
+      minimum: 1
+      maximum: 10
+
+  outputs:
+    - name: original_language
+      type: string
+      description: Detected language of the input text
+
+    - name: translated_text
+      type: string
+      description: The text translated to English (or original if already English)
+
+    - name: summary
+      type: string
+      description: Summarized text in English
+
+    - name: key_points
+      type: array
+      items: string
+      description: List of key points extracted from the text
+
+  execution:
+    type: chain
+    steps:
+      - skill: detect-language
+        input_map:
+          text: "{text}"
+        output_as: lang_result
+
+      - skill: translate-text
+        input_map:
+          text: "{text}"
+          target_language: "english"
+          source_language: "{lang_result.language}"
+        output_as: translation_result
+        condition: "{lang_result.language_code} != en"
+
+      - skill: summarize-document
+        input_map:
+          document: "{translation_result.translated_text}"
+          max_words: 150
+        output_as: summary_result
+
+  dependencies:
+    - id: detect-language
+      version: ">=1.0.0"
+    - id: translate-text
+      version: ">=1.0.0"
+    - id: summarize-document
+      version: ">=1.0.0"
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+
+  benchmarks:
+    avg_latency_ms: 3500
+    avg_cost_per_call_usd: 0.008
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: english-input
+        description: Process already-English text (skip translation)
+        input:
+          text: "Artificial intelligence is transforming industries worldwide. Companies are adopting AI to improve efficiency, reduce costs, and create new products. Healthcare is seeing breakthroughs in diagnosis through machine learning. Finance uses AI for fraud detection and algorithmic trading. The education sector is personalizing learning through adaptive systems."
+          max_points: 3
+        expected:
+          original_language: "English"
+
+      - id: spanish-input
+        description: Translate Spanish text then summarize
+        input:
+          text: "La inteligencia artificial está revolucionando la medicina moderna. Los algoritmos de aprendizaje profundo pueden detectar enfermedades en imágenes médicas con una precisión superior a la de los radiólogos humanos. Hospitales de todo el mundo están implementando sistemas de IA para el diagnóstico temprano del cáncer."
+          max_points: 3
+        expected:
+          original_language: "Spanish"

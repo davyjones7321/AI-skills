@@ -1,0 +1,78 @@
+skill:
+  id: spell-check
+  version: 1.0.0
+  name: Spell Checker
+  description: |
+    Checks spelling and grammar in text using an external API.
+    Returns a list of errors with their positions, suggestions,
+    and corrected text. Supports multiple languages.
+  author: ai-skills-team
+  license: MIT
+  tags: [spelling, grammar, text, quality, nlp]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to check for spelling and grammar errors
+      required: true
+
+    - name: language
+      type: string
+      description: Language code for spell checking (e.g. "en-US", "en-GB", "fr")
+      required: false
+      default: en-US
+
+  outputs:
+    - name: corrections
+      type: array
+      description: List of corrections with offset, length, original word, and suggestions
+
+    - name: corrected_text
+      type: string
+      description: The text with all top suggestions applied
+
+    - name: error_count
+      type: integer
+      description: Total number of spelling and grammar errors found
+
+  execution:
+    type: tool_call
+    endpoint:
+      url: https://api.languagetool.org/v2/check
+      method: POST
+      headers:
+        Content-Type: application/x-www-form-urlencoded
+        Accept: application/json
+      params:
+        text: "{text}"
+        language: "{language}"
+    response_map:
+      corrections: "$.matches"
+      error_count: "$.matches.length"
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 350
+    avg_cost_per_call_usd: 0.000
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: misspelling
+        description: Detect basic misspellings
+        input:
+          text: "Ths is a sentnce with speling erors."
+          language: en-US
+        expected:
+          error_count_min: 3
+
+      - id: clean-text
+        description: No errors in clean text
+        input:
+          text: "This is a perfectly written sentence."
+          language: en-US
+        expected:
+          error_count: 0

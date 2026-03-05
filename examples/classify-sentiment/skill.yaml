@@ -1,0 +1,97 @@
+skill:
+  id: classify-sentiment
+  version: 1.0.0
+  name: Sentiment Classifier
+  description: |
+    Classifies the sentiment of a piece of text as positive, negative, or neutral.
+    Also returns a confidence score and a brief explanation.
+  author: ai-skills-team
+  license: MIT
+  tags: [classification, sentiment, nlp, text-analysis]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to analyze
+      required: true
+      max_length: 5000
+
+    - name: granularity
+      type: string
+      description: How detailed the classification should be
+      required: false
+      default: basic
+      enum: [basic, detailed]
+      # basic: positive / negative / neutral
+      # detailed: very_positive / positive / neutral / negative / very_negative
+
+  outputs:
+    - name: sentiment
+      type: string
+      description: The classified sentiment label
+
+    - name: confidence
+      type: number
+      description: Confidence score from 0.0 to 1.0
+
+    - name: explanation
+      type: string
+      description: One-sentence explanation of why this sentiment was assigned
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a precise sentiment analysis engine.
+      Always respond with valid JSON only. No markdown, no explanation outside the JSON.
+    prompt_template: |
+      Analyze the sentiment of the following text.
+      Granularity mode: {granularity}
+
+      If granularity is "basic", use one of: positive, negative, neutral
+      If granularity is "detailed", use one of: very_positive, positive, neutral, negative, very_negative
+
+      Respond with JSON:
+      {
+        "sentiment": "...",
+        "confidence": 0.0 to 1.0,
+        "explanation": "One sentence explaining the classification."
+      }
+
+      Text to analyze:
+      {text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 600
+    avg_cost_per_call_usd: 0.001
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: positive-review
+        input:
+          text: "This product is absolutely amazing. Best purchase I've made all year!"
+          granularity: basic
+        expected:
+          sentiment: positive
+          confidence_min: 0.8
+
+      - id: negative-complaint
+        input:
+          text: "Terrible experience. The product broke after two days and support never responded."
+          granularity: basic
+        expected:
+          sentiment: negative
+
+      - id: neutral-statement
+        input:
+          text: "The package arrived on Tuesday. It was a medium-sized brown box."
+          granularity: basic
+        expected:
+          sentiment: neutral

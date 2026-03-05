@@ -1,0 +1,99 @@
+skill:
+  id: translate-text
+  version: 1.0.0
+  name: Text Translator
+  description: |
+    Translates text from one language to another.
+    Auto-detects source language if not specified.
+  author: ai-skills-team
+  license: MIT
+  tags: [translation, nlp, multilingual, text]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to translate
+      required: true
+
+    - name: target_language
+      type: string
+      description: The language to translate into (e.g. "spanish", "french", "japanese")
+      required: true
+
+    - name: source_language
+      type: string
+      description: The source language. If omitted, it will be auto-detected.
+      required: false
+      default: auto
+
+    - name: formality
+      type: string
+      description: Desired formality level of the translation
+      required: false
+      default: neutral
+      enum: [formal, neutral, informal]
+
+  outputs:
+    - name: translated_text
+      type: string
+      description: The translated text
+
+    - name: detected_source_language
+      type: string
+      description: The detected or confirmed source language
+
+    - name: notes
+      type: string
+      description: Optional translator notes on ambiguous terms or cultural nuances
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a professional translator with expertise in many languages.
+      Preserve the original meaning, tone, and formatting as closely as possible.
+      Respond only with valid JSON.
+    prompt_template: |
+      Translate the following text into {target_language}.
+      Source language: {source_language} (if "auto", detect it automatically)
+      Formality: {formality}
+
+      Respond with JSON:
+      {
+        "translated_text": "...",
+        "detected_source_language": "...",
+        "notes": "..." (or null if no notes needed)
+      }
+
+      Text to translate:
+      {text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 800
+    avg_cost_per_call_usd: 0.002
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: english-to-spanish
+        input:
+          text: "Good morning! How are you today?"
+          target_language: spanish
+          formality: neutral
+        expected:
+          detected_source_language: english
+
+      - id: auto-detect-french
+        input:
+          text: "Bonjour, comment allez-vous?"
+          target_language: english
+          source_language: auto
+        expected:
+          detected_source_language: french
+          translated_text_contains: ["hello", "how"]

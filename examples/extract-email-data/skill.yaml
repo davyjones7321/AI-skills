@@ -1,0 +1,102 @@
+skill:
+  id: extract-email-data
+  version: 1.0.0
+  name: Email Data Extractor
+  description: |
+    Extracts structured data from raw email text including sender name,
+    subject line, key action items, dates mentioned, and urgency level.
+    Useful for building email triage and auto-response agents.
+  author: ai-skills-team
+  license: MIT
+  tags: [email, extraction, nlp, productivity, structured-data]
+
+  inputs:
+    - name: email_text
+      type: string
+      description: The full raw text of the email (including headers if available)
+      required: true
+
+    - name: extract_action_items
+      type: boolean
+      description: Whether to extract action items from the email body
+      required: false
+      default: true
+
+  outputs:
+    - name: sender_name
+      type: string
+      description: Name of the email sender
+
+    - name: subject
+      type: string
+      description: Subject line of the email
+
+    - name: action_items
+      type: array
+      items: string
+      description: List of action items or tasks mentioned in the email
+
+    - name: dates_mentioned
+      type: array
+      items: string
+      description: Any dates or deadlines referenced in the email
+
+    - name: urgency
+      type: string
+      description: Estimated urgency level of the email
+      enum: [low, medium, high, critical]
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a precise email analysis engine. Extract only information
+      explicitly stated in the email. Never fabricate details.
+      Always respond in valid JSON format.
+    prompt_template: |
+      Analyze the following email and extract structured data.
+
+      Extract these fields:
+      - sender_name: Who sent the email
+      - subject: The subject line or main topic
+      - action_items: List of tasks or action items (if extract_action_items is {extract_action_items})
+      - dates_mentioned: Any dates, deadlines, or time references
+      - urgency: Rate as "low", "medium", "high", or "critical"
+
+      Respond in JSON format.
+
+      Email:
+      {email_text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 900
+    avg_cost_per_call_usd: 0.002
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: meeting-email
+        description: Extract data from a meeting invitation email
+        input:
+          email_text: "From: John Smith\nTo: team@company.com\nSubject: Urgent - Q1 Review Meeting\n\nHi team,\n\nPlease join the Q1 review meeting on March 15th at 2pm.\n\nBefore the meeting, please:\n1. Prepare your department slides\n2. Submit expense reports by March 10th\n3. Review the attached budget document\n\nThis is time-sensitive as the board presentation is on March 20th.\n\nBest,\nJohn"
+          extract_action_items: true
+        expected:
+          sender_name: "John Smith"
+          subject_contains: ["Q1", "Review"]
+          urgency: "high"
+          action_items_count_min: 2
+
+      - id: casual-email
+        description: Extract data from a low-urgency casual email
+        input:
+          email_text: "From: Sarah Lee\nSubject: Team Lunch Friday\n\nHey everyone,\n\nWant to grab lunch together this Friday? I was thinking that new Italian place on Main Street.\n\nLet me know if you're in!\n\nSarah"
+          extract_action_items: true
+        expected:
+          sender_name: "Sarah Lee"
+          urgency: "low"

@@ -1,0 +1,122 @@
+skill:
+  id: review-and-fix-code
+  version: 1.0.0
+  name: Review and Fix Code
+  description: |
+    A chain skill that first reviews code for bugs and issues,
+    then automatically generates fixed code with the issues resolved.
+    Combines the code-review skill with a code-fix step.
+  author: ai-skills-team
+  license: MIT
+  tags: [code-review, code-fix, chain, developer-tools, automation]
+
+  inputs:
+    - name: code
+      type: string
+      description: The code snippet to review and fix
+      required: true
+
+    - name: language
+      type: string
+      description: Programming language of the code
+      required: false
+      default: auto-detect
+
+    - name: fix_level
+      type: string
+      description: How aggressively to fix issues
+      required: false
+      default: safe
+      enum: [safe, moderate, aggressive]
+
+  outputs:
+    - name: issues_found
+      type: array
+      description: List of issues found during review
+
+    - name: fixed_code
+      type: string
+      description: The code with issues fixed
+
+    - name: changes_made
+      type: array
+      items: string
+      description: List of changes that were applied
+
+    - name: overall_quality_before
+      type: string
+      description: Code quality rating before fixes
+
+    - name: overall_quality_after
+      type: string
+      description: Expected code quality rating after fixes
+
+  execution:
+    type: chain
+    steps:
+      - skill: code-review
+        input_map:
+          code: "{code}"
+          language: "{language}"
+          focus: "all"
+        output_as: review_result
+
+      - skill: code-fixer
+        input_map:
+          code: "{code}"
+          language: "{language}"
+          issues: "{review_result.issues}"
+          fix_level: "{fix_level}"
+        output_as: fix_result
+
+  dependencies:
+    - id: code-review
+      version: ">=1.0.0"
+    - id: code-fixer
+      version: ">=1.0.0"
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+
+  benchmarks:
+    avg_latency_ms: 3000
+    avg_cost_per_call_usd: 0.008
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: sql-injection-fix
+        description: Find and fix SQL injection vulnerability
+        input:
+          code: |
+            def get_user(username):
+                query = f"SELECT * FROM users WHERE name = '{username}'"
+                cursor.execute(query)
+                return cursor.fetchone()
+
+            def delete_old_records(days):
+                query = "DELETE FROM logs WHERE created < NOW() - INTERVAL '%s days'" % days
+                cursor.execute(query)
+          language: python
+          fix_level: safe
+        expected:
+          issues_found_count_min: 2
+          overall_quality_before: "poor"
+
+      - id: minor-improvements
+        description: Review and improve code with minor style issues
+        input:
+          code: |
+            def calc(x,y,op):
+                if op == 'add':
+                    return x+y
+                elif op == 'sub':
+                    return x-y
+                elif op == 'mul':
+                    return x*y
+                elif op == 'div':
+                    return x/y
+          language: python
+          fix_level: moderate
+        expected:
+          issues_found_count_min: 1

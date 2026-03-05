@@ -1,0 +1,122 @@
+skill:
+  id: word-frequency
+  version: 1.0.0
+  name: Word Frequency Counter
+  description: |
+    Counts the frequency of each word in a text document.
+    Returns a sorted list of words with their counts and the total word count.
+    Useful for text analysis, keyword extraction, and content analysis.
+  author: ai-skills-team
+  license: MIT
+  tags: [text, analysis, utility, nlp, statistics]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to analyze
+      required: true
+
+    - name: top_n
+      type: integer
+      description: Number of top words to return
+      required: false
+      default: 10
+      minimum: 1
+      maximum: 100
+
+    - name: ignore_common
+      type: boolean
+      description: Whether to ignore common stop words (the, a, is, etc.)
+      required: false
+      default: true
+
+  outputs:
+    - name: frequencies
+      type: array
+      description: List of {word, count} objects sorted by count descending
+
+    - name: total_words
+      type: integer
+      description: Total number of words in the text
+
+    - name: unique_words
+      type: integer
+      description: Number of unique words in the text
+
+  execution:
+    type: code
+    language: python
+    code: |
+      def run(inputs):
+          import re
+
+          STOP_WORDS = {
+              'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been',
+              'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+              'would', 'could', 'should', 'may', 'might', 'shall', 'can',
+              'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
+              'as', 'into', 'about', 'like', 'through', 'after', 'over',
+              'between', 'out', 'against', 'during', 'without', 'before',
+              'under', 'around', 'among', 'and', 'but', 'or', 'nor', 'not',
+              'so', 'yet', 'both', 'either', 'neither', 'each', 'every',
+              'all', 'any', 'few', 'more', 'most', 'other', 'some', 'such',
+              'no', 'only', 'own', 'same', 'than', 'too', 'very', 'just',
+              'because', 'if', 'when', 'where', 'how', 'what', 'which',
+              'who', 'whom', 'this', 'that', 'these', 'those', 'i', 'me',
+              'my', 'we', 'our', 'you', 'your', 'he', 'him', 'his', 'she',
+              'her', 'it', 'its', 'they', 'them', 'their'
+          }
+
+          text = inputs["text"].lower()
+          words = re.findall(r'\b[a-z]+\b', text)
+          total_words = len(words)
+
+          ignore_common = inputs.get("ignore_common", True)
+          if ignore_common:
+              filtered = [w for w in words if w not in STOP_WORDS]
+          else:
+              filtered = words
+
+          freq = {}
+          for word in filtered:
+              freq[word] = freq.get(word, 0) + 1
+
+          sorted_freq = sorted(freq.items(), key=lambda x: -x[1])
+          top_n = inputs.get("top_n", 10)
+
+          return {
+              "frequencies": [
+                  {"word": w, "count": c} for w, c in sorted_freq[:top_n]
+              ],
+              "total_words": total_words,
+              "unique_words": len(freq)
+          }
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 5
+    avg_cost_per_call_usd: 0.000
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: basic-count
+        description: Count word frequencies in simple text
+        input:
+          text: "the cat sat on the mat the cat ate the food"
+          top_n: 3
+          ignore_common: false
+        expected:
+          total_words: 11
+
+      - id: stop-words-filtered
+        description: Count frequencies with stop words removed
+        input:
+          text: "the quick brown fox jumps over the lazy dog and the fox runs away"
+          top_n: 5
+          ignore_common: true
+        expected:
+          total_words: 14

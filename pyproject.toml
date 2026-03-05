@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aiskills"
+version = "0.1.0"
+description = "Universal open standard for AI agent skills — write once, run anywhere"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "ai-skills contributors" }]
+keywords = ["ai", "agents", "skills", "tools", "langchain", "autogen", "crewai", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "sqlalchemy>=2.0.25",
+    "pydantic-settings>=2.1.0",
+]
+
+[project.optional-dependencies]
+langchain = ["langchain>=0.2", "langchain-openai>=0.1"]
+autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
+crewai = ["crewai>=0.55"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+]
+all = ["aiskills[langchain,autogen,crewai,dev]"]
+
+[project.scripts]
+aiskills = "sdk.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ai-skills/ai-skills"
+Documentation = "https://docs.ai-skills.dev"
+Registry = "https://registry.ai-skills.dev"
+Issues = "https://github.com/ai-skills/ai-skills/issues"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+ignore_missing_imports = true

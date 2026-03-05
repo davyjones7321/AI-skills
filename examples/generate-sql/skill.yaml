@@ -1,0 +1,94 @@
+skill:
+  id: generate-sql
+  version: 1.0.0
+  name: SQL Query Generator
+  description: |
+    Generates SQL queries from natural language descriptions.
+    Supports common SQL dialects (PostgreSQL, MySQL, SQLite).
+    Includes query explanation and safety warnings for destructive operations.
+  author: ai-skills-team
+  license: MIT
+  tags: [sql, database, developer-tools, code-generation, nlp]
+
+  inputs:
+    - name: description
+      type: string
+      description: Natural language description of the desired query
+      required: true
+
+    - name: schema
+      type: string
+      description: Database schema or table definitions for context
+      required: false
+      default: ""
+
+    - name: dialect
+      type: string
+      description: SQL dialect to generate for
+      required: false
+      default: postgresql
+      enum: [postgresql, mysql, sqlite]
+
+  outputs:
+    - name: query
+      type: string
+      description: The generated SQL query
+
+    - name: explanation
+      type: string
+      description: Plain English explanation of what the query does
+
+    - name: is_destructive
+      type: boolean
+      description: Whether the query modifies or deletes data
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are an expert database engineer. Generate clean, efficient, and safe SQL queries.
+      Always use parameterized-style placeholders where user input would go.
+      Flag any query that modifies or deletes data as destructive.
+      Always respond in valid JSON format.
+    prompt_template: |
+      Generate a {dialect} SQL query for the following request:
+      "{description}"
+
+      Database schema (if provided):
+      {schema}
+
+      Respond in JSON with:
+      - query: the SQL query (use proper formatting with newlines)
+      - explanation: plain English explanation of the query
+      - is_destructive: true if the query modifies/deletes data, false otherwise
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 800
+    avg_cost_per_call_usd: 0.002
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: select-query
+        description: Generate a simple SELECT query
+        input:
+          description: "Get all users who signed up in the last 30 days, ordered by signup date"
+          schema: "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT, email TEXT, created_at TIMESTAMP);"
+          dialect: postgresql
+        expected:
+          is_destructive: false
+
+      - id: delete-query
+        description: Generate a destructive DELETE query
+        input:
+          description: "Delete all inactive users who haven't logged in for over a year"
+          schema: "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT, last_login TIMESTAMP, active BOOLEAN);"
+          dialect: postgresql
+        expected:
+          is_destructive: true

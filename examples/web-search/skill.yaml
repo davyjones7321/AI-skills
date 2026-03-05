@@ -1,0 +1,77 @@
+skill:
+  id: web-search
+  version: 1.0.0
+  name: Web Search
+  description: |
+    Searches the web using a query and returns the top results with titles,
+    URLs, and snippets. This is a tool_call type skill — it calls an external API
+    rather than prompting an LLM.
+  author: ai-skills-team
+  license: MIT
+  tags: [search, web, retrieval, information]
+
+  inputs:
+    - name: query
+      type: string
+      description: The search query
+      required: true
+      max_length: 500
+
+    - name: num_results
+      type: integer
+      description: Number of results to return
+      required: false
+      default: 5
+      minimum: 1
+      maximum: 20
+
+    - name: language
+      type: string
+      description: Language/region for results (e.g. "en", "es", "fr")
+      required: false
+      default: en
+
+  outputs:
+    - name: results
+      type: array
+      description: List of search results
+
+    - name: total_results_estimate
+      type: integer
+      description: Estimated total number of results on the web
+
+  execution:
+    type: tool_call
+    endpoint:
+      url: https://api.search-provider.com/v1/search
+      method: GET
+      headers:
+        Authorization: "Bearer {env.SEARCH_API_KEY}"
+        Accept: application/json
+      params:
+        q: "{query}"
+        num: "{num_results}"
+        hl: "{language}"
+    response_map:
+      results: "$.items"
+      total_results_estimate: "$.searchInformation.totalResults"
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 400
+    avg_cost_per_call_usd: 0.005
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: basic-search
+        description: Search for a well-known topic
+        input:
+          query: "Python programming language"
+          num_results: 3
+        expected:
+          results_count_min: 1
+          results_count_max: 3

@@ -1,0 +1,115 @@
+skill:
+  id: calculate-reading-time
+  version: 1.0.0
+  name: Reading Time Calculator
+  description: |
+    Estimates the reading time for a piece of text based on word count.
+    Uses configurable words-per-minute rate. Also provides word count,
+    sentence count, and paragraph count statistics.
+  author: ai-skills-team
+  license: MIT
+  tags: [text, analysis, reading, utility, statistics]
+
+  inputs:
+    - name: text
+      type: string
+      description: The text to estimate reading time for
+      required: true
+
+    - name: wpm
+      type: integer
+      description: Words per minute reading speed
+      required: false
+      default: 238
+      minimum: 100
+      maximum: 600
+
+  outputs:
+    - name: reading_time_minutes
+      type: number
+      description: Estimated reading time in minutes (rounded to 1 decimal)
+
+    - name: reading_time_display
+      type: string
+      description: Human-friendly reading time (e.g. "3 min read")
+
+    - name: word_count
+      type: integer
+      description: Total number of words
+
+    - name: sentence_count
+      type: integer
+      description: Total number of sentences
+
+    - name: paragraph_count
+      type: integer
+      description: Total number of paragraphs
+
+  execution:
+    type: code
+    language: python
+    code: |
+      def run(inputs):
+          import re
+
+          text = inputs["text"].strip()
+          wpm = inputs.get("wpm", 238)
+
+          # Word count
+          words = text.split()
+          word_count = len(words)
+
+          # Sentence count (split on . ! ?)
+          sentences = re.split(r'[.!?]+', text)
+          sentence_count = len([s for s in sentences if s.strip()])
+
+          # Paragraph count (split on double newlines)
+          paragraphs = re.split(r'\n\s*\n', text)
+          paragraph_count = len([p for p in paragraphs if p.strip()])
+          if paragraph_count == 0:
+              paragraph_count = 1
+
+          # Reading time
+          minutes = round(word_count / wpm, 1)
+          if minutes < 1:
+              display = "less than 1 min read"
+          else:
+              rounded = round(minutes)
+              display = f"{rounded} min read"
+
+          return {
+              "reading_time_minutes": minutes,
+              "reading_time_display": display,
+              "word_count": word_count,
+              "sentence_count": sentence_count,
+              "paragraph_count": paragraph_count
+          }
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 1
+    avg_cost_per_call_usd: 0.000
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: short-text
+        description: Calculate reading time for short text
+        input:
+          text: "Hello world. This is a test."
+          wpm: 238
+        expected:
+          word_count: 7
+          sentence_count: 2
+
+      - id: article-length
+        description: Calculate reading time for a longer article
+        input:
+          text: "Artificial intelligence is transforming the world. Companies across every industry are investing heavily in AI research and development. From healthcare to finance, the applications seem limitless. Machine learning models are becoming more sophisticated each year. Natural language processing has reached human-level performance on many benchmarks. Computer vision systems can now identify objects with remarkable accuracy. The next decade will likely see even more dramatic advances. Researchers are working on artificial general intelligence. The implications for society are profound and far-reaching. We must ensure these technologies are developed responsibly."
+          wpm: 200
+        expected:
+          reading_time_minutes: 0.4
+          paragraph_count: 1

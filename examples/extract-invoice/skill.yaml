@@ -1,0 +1,98 @@
+skill:
+  id: extract-invoice
+  version: 1.0.0
+  name: Invoice Data Extractor
+  description: |
+    Extracts structured data from invoice text, including vendor name,
+    invoice number, line items, totals, and due dates.
+  author: ai-skills-team
+  license: MIT
+  tags: [extraction, finance, invoices, structured-output]
+
+  inputs:
+    - name: invoice_text
+      type: string
+      description: Raw text content of the invoice (OCR output or plain text)
+      required: true
+
+  outputs:
+    - name: vendor_name
+      type: string
+      description: Name of the vendor or supplier
+
+    - name: invoice_number
+      type: string
+      description: Invoice ID or reference number
+
+    - name: invoice_date
+      type: string
+      description: Date the invoice was issued (ISO 8601 format if detectable)
+
+    - name: due_date
+      type: string
+      description: Payment due date (ISO 8601 format if detectable)
+
+    - name: total_amount
+      type: number
+      description: Total amount due
+
+    - name: currency
+      type: string
+      description: Currency code (e.g. USD, EUR, GBP)
+
+    - name: line_items
+      type: array
+      description: Individual line items on the invoice
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a precise data extraction system. Extract only information
+      that is explicitly present in the text. Use null for missing fields.
+      Always respond with valid JSON only — no explanation, no markdown.
+    prompt_template: |
+      Extract all invoice data from the following text and return a JSON object
+      with these exact fields:
+      - vendor_name (string or null)
+      - invoice_number (string or null)
+      - invoice_date (string in YYYY-MM-DD or null)
+      - due_date (string in YYYY-MM-DD or null)
+      - total_amount (number or null)
+      - currency (3-letter code or null)
+      - line_items (array of objects with: description, quantity, unit_price, total)
+
+      Invoice text:
+      {invoice_text}
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 900
+    avg_cost_per_call_usd: 0.002
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: simple-invoice
+        description: Extract data from a basic invoice
+        input:
+          invoice_text: |
+            INVOICE
+            Vendor: Acme Corp
+            Invoice #: INV-2024-0042
+            Date: 2024-03-15
+            Due: 2024-04-15
+
+            Services rendered: Web development    $2,500.00
+            Hosting (annual):                       $300.00
+
+            TOTAL DUE: $2,800.00 USD
+        expected:
+          vendor_name: "Acme Corp"
+          invoice_number: "INV-2024-0042"
+          total_amount: 2800.00
+          currency: "USD"

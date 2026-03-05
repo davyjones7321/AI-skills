@@ -1,0 +1,138 @@
+skill:
+  id: json-to-csv
+  version: 1.0.0
+  name: JSON to CSV Converter
+  description: |
+    Converts a JSON array of objects into CSV format.
+    Automatically detects column headers from object keys.
+    Handles nested values by flattening with dot notation.
+  author: ai-skills-team
+  license: MIT
+  tags: [json, csv, converter, data, utility]
+
+  inputs:
+    - name: json_data
+      type: string
+      description: JSON string containing an array of objects
+      required: true
+
+    - name: delimiter
+      type: string
+      description: Delimiter character for CSV output
+      required: false
+      default: ","
+
+    - name: include_header
+      type: boolean
+      description: Whether to include a header row
+      required: false
+      default: true
+
+  outputs:
+    - name: csv
+      type: string
+      description: The converted CSV string
+
+    - name: row_count
+      type: integer
+      description: Number of data rows (excluding header)
+
+    - name: column_count
+      type: integer
+      description: Number of columns
+
+  execution:
+    type: code
+    language: python
+    code: |
+      def run(inputs):
+          import json
+
+          def flatten(obj, prefix=""):
+              items = {}
+              if isinstance(obj, dict):
+                  for k, v in obj.items():
+                      new_key = f"{prefix}.{k}" if prefix else k
+                      if isinstance(v, (dict, list)):
+                          items.update(flatten(v, new_key))
+                      else:
+                          items[new_key] = v
+              elif isinstance(obj, list):
+                  for i, v in enumerate(obj):
+                      new_key = f"{prefix}.{i}"
+                      if isinstance(v, (dict, list)):
+                          items.update(flatten(v, new_key))
+                      else:
+                          items[new_key] = v
+              else:
+                  items[prefix] = obj
+              return items
+
+          data = json.loads(inputs["json_data"])
+          delimiter = inputs.get("delimiter", ",")
+          include_header = inputs.get("include_header", True)
+
+          if not isinstance(data, list):
+              data = [data]
+
+          flat_rows = [flatten(row) for row in data]
+
+          # Collect all unique keys preserving order
+          all_keys = []
+          seen = set()
+          for row in flat_rows:
+              for key in row:
+                  if key not in seen:
+                      all_keys.append(key)
+                      seen.add(key)
+
+          def escape_csv(val):
+              s = str(val) if val is not None else ""
+              if delimiter in s or '"' in s or '\n' in s:
+                  s = '"' + s.replace('"', '""') + '"'
+              return s
+
+          lines = []
+          if include_header:
+              lines.append(delimiter.join(escape_csv(k) for k in all_keys))
+
+          for row in flat_rows:
+              line = delimiter.join(escape_csv(row.get(k, "")) for k in all_keys)
+              lines.append(line)
+
+          return {
+              "csv": "\n".join(lines),
+              "row_count": len(flat_rows),
+              "column_count": len(all_keys)
+          }
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 3
+    avg_cost_per_call_usd: 0.000
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: simple-array
+        description: Convert a simple JSON array to CSV
+        input:
+          json_data: '[{"name": "Alice", "age": 30, "city": "NYC"}, {"name": "Bob", "age": 25, "city": "LA"}]'
+          delimiter: ","
+          include_header: true
+        expected:
+          row_count: 2
+          column_count: 3
+
+      - id: nested-objects
+        description: Convert JSON with nested objects
+        input:
+          json_data: '[{"user": {"name": "Alice", "email": "alice@example.com"}, "score": 95}]'
+          delimiter: ","
+          include_header: true
+        expected:
+          row_count: 1
+          column_count: 3

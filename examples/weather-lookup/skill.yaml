@@ -1,0 +1,90 @@
+skill:
+  id: weather-lookup
+  version: 1.0.0
+  name: Weather Lookup
+  description: |
+    Gets current weather data for a given location using an external weather API.
+    Returns temperature, conditions, humidity, and wind speed.
+    Supports city names and geographic coordinates.
+  author: ai-skills-team
+  license: MIT
+  tags: [weather, api, location, data, utility]
+
+  inputs:
+    - name: location
+      type: string
+      description: City name (e.g. "London") or coordinates (e.g. "51.5,-0.1")
+      required: true
+
+    - name: units
+      type: string
+      description: Temperature units
+      required: false
+      default: metric
+      enum: [metric, imperial]
+
+  outputs:
+    - name: temperature
+      type: number
+      description: Current temperature in the requested units
+
+    - name: conditions
+      type: string
+      description: Weather conditions description (e.g. "Partly Cloudy")
+
+    - name: humidity
+      type: integer
+      description: Humidity percentage (0-100)
+
+    - name: wind_speed
+      type: number
+      description: Wind speed in m/s (metric) or mph (imperial)
+
+    - name: city
+      type: string
+      description: Resolved city name
+
+  execution:
+    type: tool_call
+    endpoint:
+      url: https://api.openweathermap.org/data/2.5/weather
+      method: GET
+      headers:
+        Accept: application/json
+      params:
+        q: "{location}"
+        units: "{units}"
+        appid: "{env.OPENWEATHER_API_KEY}"
+    response_map:
+      temperature: "$.main.temp"
+      conditions: "$.weather[0].description"
+      humidity: "$.main.humidity"
+      wind_speed: "$.wind.speed"
+      city: "$.name"
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 300
+    avg_cost_per_call_usd: 0.000
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: city-lookup
+        description: Look up weather for a known city
+        input:
+          location: "London"
+          units: metric
+        expected:
+          city: "London"
+
+      - id: imperial-units
+        description: Look up weather in imperial units
+        input:
+          location: "New York"
+          units: imperial
+        expected:
+          city: "New York"

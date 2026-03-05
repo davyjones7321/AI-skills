@@ -1,0 +1,116 @@
+skill:
+  id: code-review
+  version: 1.0.0
+  name: Code Reviewer
+  description: |
+    Reviews a code snippet for bugs, security vulnerabilities, performance issues,
+    and style improvements. Returns categorized findings with severity levels
+    and suggested fixes. Supports multiple programming languages.
+  author: ai-skills-team
+  license: MIT
+  tags: [code-review, developer-tools, security, quality, bugs]
+
+  inputs:
+    - name: code
+      type: string
+      description: The code snippet to review
+      required: true
+
+    - name: language
+      type: string
+      description: Programming language of the code
+      required: false
+      default: auto-detect
+
+    - name: focus
+      type: string
+      description: What aspect to focus the review on
+      required: false
+      default: all
+      enum: [all, bugs, security, performance, style]
+
+  outputs:
+    - name: issues
+      type: array
+      description: List of issues found, each with type, severity, line, message, and suggestion
+
+    - name: overall_quality
+      type: string
+      description: Overall code quality rating
+      enum: [excellent, good, needs-improvement, poor]
+
+    - name: summary
+      type: string
+      description: Brief summary of the review findings
+
+  execution:
+    type: prompt
+    model_hint: any
+    system_prompt: |
+      You are a senior software engineer performing a thorough code review.
+      Be constructive, specific, and actionable. Reference line numbers when possible.
+      Categorize each issue as: bug, security, performance, or style.
+      Rate severity as: critical, high, medium, or low.
+      Always respond in valid JSON format.
+    prompt_template: |
+      Review the following {language} code. Focus on: {focus}
+
+      For each issue found, provide:
+      - type: bug | security | performance | style
+      - severity: critical | high | medium | low
+      - line: approximate line number
+      - message: description of the issue
+      - suggestion: how to fix it
+
+      Respond in JSON with:
+      - issues: array of issue objects
+      - overall_quality: "excellent" | "good" | "needs-improvement" | "poor"
+      - summary: brief 1-2 sentence summary
+
+      Code:
+      ```
+      {code}
+      ```
+    output_parser: json
+
+  compatible_with:
+    - langchain
+    - autogen
+    - crewai
+    - semantic_kernel
+    - raw_api
+
+  benchmarks:
+    avg_latency_ms: 1500
+    avg_cost_per_call_usd: 0.004
+    last_evaluated: 2026-02-01
+    test_cases:
+      - id: sql-injection
+        description: Detect SQL injection vulnerability
+        input:
+          code: |
+            def get_user(username):
+                query = f"SELECT * FROM users WHERE name = '{username}'"
+                cursor.execute(query)
+                return cursor.fetchone()
+          language: python
+          focus: security
+        expected:
+          issues_count_min: 1
+          overall_quality: "poor"
+
+      - id: clean-code
+        description: Review well-written code
+        input:
+          code: |
+            from typing import Optional
+
+            def calculate_discount(price: float, discount_pct: float) -> Optional[float]:
+                """Calculate discounted price. Returns None for invalid inputs."""
+                if price < 0 or discount_pct < 0 or discount_pct > 100:
+                    return None
+                return round(price * (1 - discount_pct / 100), 2)
+          language: python
+          focus: all
+        expected:
+          overall_quality: "good"

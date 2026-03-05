@@ -1,0 +1,588 @@
+{
+  "registry": {
+    "name": "ai-skills registry",
+    "version": "0.1.0",
+    "description": "The official public registry for ai-skills compatible skills",
+    "url": "https://registry.ai-skills.dev",
+    "spec_version": "0.1"
+  },
+  "skills": [
+    {
+      "id": "summarize-document",
+      "name": "Document Summarizer",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Summarizes a document into a concise summary and key bullet points.",
+      "license": "MIT",
+      "tags": [
+        "summarization",
+        "nlp",
+        "text",
+        "productivity"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 1100,
+        "avg_cost_per_call_usd": 0.003,
+        "test_cases_count": 1
+      },
+      "downloads": 0,
+      "published_at": "2026-02-18",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/summarize-document/1.0.0"
+    },
+    {
+      "id": "extract-invoice",
+      "name": "Invoice Data Extractor",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Extracts structured data from invoice text including vendor, totals, and line items.",
+      "license": "MIT",
+      "tags": [
+        "extraction",
+        "finance",
+        "invoices",
+        "structured-output"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 900,
+        "avg_cost_per_call_usd": 0.002,
+        "test_cases_count": 1
+      },
+      "downloads": 0,
+      "published_at": "2026-02-18",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/extract-invoice/1.0.0"
+    },
+    {
+      "id": "classify-sentiment",
+      "name": "Sentiment Classifier",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Classifies text sentiment as positive, negative, or neutral with confidence score.",
+      "license": "MIT",
+      "tags": [
+        "classification",
+        "sentiment",
+        "nlp",
+        "text-analysis"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 600,
+        "avg_cost_per_call_usd": 0.001,
+        "test_cases_count": 3
+      },
+      "downloads": 0,
+      "published_at": "2026-02-18",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/classify-sentiment/1.0.0"
+    },
+    {
+      "id": "translate-text",
+      "name": "Text Translator",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Translates text between languages with auto-detection and formality control.",
+      "license": "MIT",
+      "tags": [
+        "translation",
+        "nlp",
+        "multilingual",
+        "text"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 800,
+        "avg_cost_per_call_usd": 0.002,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-02-18",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/translate-text/1.0.0"
+    },
+    {
+      "id": "web-search",
+      "name": "Web Search",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Searches the web and returns top results with titles, URLs, and snippets.",
+      "license": "MIT",
+      "tags": [
+        "search",
+        "web",
+        "retrieval",
+        "information"
+      ],
+      "execution_type": "tool_call",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 400,
+        "avg_cost_per_call_usd": 0.005,
+        "test_cases_count": 1
+      },
+      "downloads": 0,
+      "published_at": "2026-02-18",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/web-search/1.0.0"
+    },
+    {
+      "id": "extract-email-data",
+      "name": "Email Data Extractor",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Extracts structured data from raw email text including sender, subject, action items, dates, and urgency.",
+      "license": "MIT",
+      "tags": [
+        "email",
+        "extraction",
+        "nlp",
+        "productivity",
+        "structured-data"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 900,
+        "avg_cost_per_call_usd": 0.002,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/extract-email-data/1.0.0"
+    },
+    {
+      "id": "generate-commit-message",
+      "name": "Commit Message Generator",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Generates conventional commit messages from code diffs.",
+      "license": "MIT",
+      "tags": [
+        "git",
+        "developer-tools",
+        "code",
+        "productivity",
+        "commits"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 800,
+        "avg_cost_per_call_usd": 0.002,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/generate-commit-message/1.0.0"
+    },
+    {
+      "id": "code-review",
+      "name": "Code Reviewer",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Reviews code for bugs, security vulnerabilities, performance issues, and style improvements.",
+      "license": "MIT",
+      "tags": [
+        "code-review",
+        "developer-tools",
+        "security",
+        "quality",
+        "bugs"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 1500,
+        "avg_cost_per_call_usd": 0.004,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/code-review/1.0.0"
+    },
+    {
+      "id": "detect-language",
+      "name": "Language Detector",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Detects the language of input text with ISO 639-1 code and confidence score.",
+      "license": "MIT",
+      "tags": [
+        "nlp",
+        "language-detection",
+        "i18n",
+        "text",
+        "multilingual"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 500,
+        "avg_cost_per_call_usd": 0.001,
+        "test_cases_count": 3
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/detect-language/1.0.0"
+    },
+    {
+      "id": "generate-sql",
+      "name": "SQL Query Generator",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Generates SQL queries from natural language descriptions with safety warnings.",
+      "license": "MIT",
+      "tags": [
+        "sql",
+        "database",
+        "developer-tools",
+        "code-generation",
+        "nlp"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 800,
+        "avg_cost_per_call_usd": 0.002,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/generate-sql/1.0.0"
+    },
+    {
+      "id": "summarize-to-tweet",
+      "name": "Tweet Summarizer",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Condenses any text into a tweet-sized summary (max 280 characters).",
+      "license": "MIT",
+      "tags": [
+        "summarization",
+        "social-media",
+        "twitter",
+        "content",
+        "nlp"
+      ],
+      "execution_type": "prompt",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "semantic_kernel",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 600,
+        "avg_cost_per_call_usd": 0.001,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/summarize-to-tweet/1.0.0"
+    },
+    {
+      "id": "spell-check",
+      "name": "Spell Checker",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Checks spelling and grammar in text using the LanguageTool API.",
+      "license": "MIT",
+      "tags": [
+        "spelling",
+        "grammar",
+        "text",
+        "quality",
+        "nlp"
+      ],
+      "execution_type": "tool_call",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 350,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/spell-check/1.0.0"
+    },
+    {
+      "id": "weather-lookup",
+      "name": "Weather Lookup",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Gets current weather data for a given location via OpenWeatherMap API.",
+      "license": "MIT",
+      "tags": [
+        "weather",
+        "api",
+        "location",
+        "data",
+        "utility"
+      ],
+      "execution_type": "tool_call",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 300,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/weather-lookup/1.0.0"
+    },
+    {
+      "id": "word-frequency",
+      "name": "Word Frequency Counter",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Counts word frequencies in text with stop word filtering.",
+      "license": "MIT",
+      "tags": [
+        "text",
+        "analysis",
+        "utility",
+        "nlp",
+        "statistics"
+      ],
+      "execution_type": "code",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 5,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/word-frequency/1.0.0"
+    },
+    {
+      "id": "markdown-to-html",
+      "name": "Markdown to HTML Converter",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Converts Markdown text to HTML with support for headers, lists, links, code blocks, and inline formatting.",
+      "license": "MIT",
+      "tags": [
+        "markdown",
+        "html",
+        "converter",
+        "utility",
+        "text"
+      ],
+      "execution_type": "code",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 2,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/markdown-to-html/1.0.0"
+    },
+    {
+      "id": "json-to-csv",
+      "name": "JSON to CSV Converter",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Converts JSON arrays to CSV format with nested object flattening.",
+      "license": "MIT",
+      "tags": [
+        "json",
+        "csv",
+        "converter",
+        "data",
+        "utility"
+      ],
+      "execution_type": "code",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 3,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/json-to-csv/1.0.0"
+    },
+    {
+      "id": "calculate-reading-time",
+      "name": "Reading Time Calculator",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Estimates reading time and provides text statistics (word, sentence, paragraph counts).",
+      "license": "MIT",
+      "tags": [
+        "text",
+        "analysis",
+        "reading",
+        "utility",
+        "statistics"
+      ],
+      "execution_type": "code",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai",
+        "raw_api"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 1,
+        "avg_cost_per_call_usd": 0.000,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/calculate-reading-time/1.0.0"
+    },
+    {
+      "id": "translate-and-summarize",
+      "name": "Translate and Summarize",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Chain skill that detects language, translates to English, then summarizes into key points.",
+      "license": "MIT",
+      "tags": [
+        "translation",
+        "summarization",
+        "chain",
+        "multilingual",
+        "nlp"
+      ],
+      "execution_type": "chain",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 3500,
+        "avg_cost_per_call_usd": 0.008,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/translate-and-summarize/1.0.0"
+    },
+    {
+      "id": "review-and-fix-code",
+      "name": "Review and Fix Code",
+      "version": "1.0.0",
+      "author": "ai-skills-team",
+      "description": "Chain skill that reviews code for issues then auto-generates fixes.",
+      "license": "MIT",
+      "tags": [
+        "code-review",
+        "code-fix",
+        "chain",
+        "developer-tools",
+        "automation"
+      ],
+      "execution_type": "chain",
+      "compatible_with": [
+        "langchain",
+        "autogen",
+        "crewai"
+      ],
+      "benchmarks": {
+        "avg_latency_ms": 3000,
+        "avg_cost_per_call_usd": 0.008,
+        "test_cases_count": 2
+      },
+      "downloads": 0,
+      "published_at": "2026-03-01",
+      "skill_url": "https://registry.ai-skills.dev/skills/ai-skills-team/review-and-fix-code/1.0.0"
+    }
+  ],
+  "stats": {
+    "total_skills": 19,
+    "total_authors": 1,
+    "last_updated": "2026-03-01"
+  }
+}
