@@ -109,7 +109,21 @@ aiskills run skill.yaml --input-file input.json --execute
 ### Publish to the registry
 
 ```bash
-aiskills publish
+# Authenticate with your token
+aiskills login --token "my-token" --username "my-username"
+
+# Publish your skill to the registry
+aiskills publish skill.yaml
+```
+
+### Install a skill
+
+```bash
+# Download a published skill to your local workspace
+aiskills install ai-skills-team/summarize-document
+
+# Download and immediately auto-export it to LangChain!
+aiskills install ai-skills-team/summarize-document --export langchain
 ```
 
 ---
@@ -139,8 +153,10 @@ ai-skills/
 │   ├── validator.py        ← Schema validation
 │   ├── security.py         ← Security auditing
 │   ├── runner.py           ← Skill execution engine (run command)
+│   ├── auth_config.py      ← Authentication management
 │   └── exporters/          ← Framework adapters
 └── registry/
+    ├── api/                ← FastAPI Registry Backend Server
     └── index.json          ← Prototype registry index
 ```
 

@@ -142,35 +142,35 @@ Build 10–15 more skills to show range and validate all execution types.
 
 ### 3.1 — `aiskills publish` CLI Command
 
-- [ ] Add `publish` subcommand to `sdk/cli.py`
-- [ ] Flow:
+- [x] Add `publish` subcommand to `sdk/cli.py`
+- [x] Flow:
   1. Read `skill.yaml`
   2. Run `validate` — abort if invalid
   3. Run security audit — warn on issues
   4. Run all test cases locally
-  5. Authenticate with registry (GitHub OAuth token)
+  5. Authenticate with registry (GitHub OAuth token or personal token)
   6. Upload skill YAML to registry API
   7. Print the URL where the skill is now live
-- [ ] Store auth token in `~/.aiskills/config.json`
-- [ ] Add `--dry-run` flag to simulate without uploading
+- [x] Store auth token in `~/.aiskills/config.json`
+- [x] Add `--dry-run` flag to simulate without uploading
 
 ---
 
 ### 3.2 — `aiskills install` CLI Command
 
-- [ ] Add `install` subcommand to `sdk/cli.py`
-- [ ] Support formats:
+- [x] Add `install` subcommand to `sdk/cli.py`
+- [x] Support formats:
   ```bash
   aiskills install jane/summarize-document
   aiskills install jane/summarize-document@1.2.0
   ```
-- [ ] Download `skill.yaml` into a local `skills/` directory
-- [ ] Add `--export` flag to auto-export after install:
+- [x] Download `skill.yaml` into a local `skills/` directory
+- [x] Add `--export` flag to auto-export after install:
   ```bash
   aiskills install jane/summarize-document --export langchain
   ```
-- [ ] Create `skills/` directory if it doesn't exist
-- [ ] Handle version conflicts (skill already installed at different version)
+- [x] Create `skills/` directory if it doesn't exist
+- [ ] Handle version conflicts (skill already installed at different version) — defer to Phase 6.3
 
 ---
 
@@ -178,14 +178,14 @@ Build 10–15 more skills to show range and validate all execution types.
 
 #### Tech Stack
 
-- [ ] **Framework:** FastAPI (Python)
-- [ ] **Database:** SQLite (start simple, migrate to PostgreSQL later if needed)
-- [ ] **Auth:** GitHub OAuth (personal access tokens for MVP)
+- [x] **Framework:** FastAPI (Python)
+- [x] **Database:** SQLite (start simple, migrate to PostgreSQL later if needed)
+- [x] **Auth:** Token MVP (personal access tokens for MVP)
 - [ ] **Hosting:** Railway.app or Render.com
 
 #### Database Schema
 
-- [ ] Create `skills` table:
+- [x] Create `skills` table:
   ```sql
   CREATE TABLE skills (
       id            TEXT,
@@ -194,9 +194,9 @@ Build 10–15 more skills to show range and validate all execution types.
       name          TEXT,
       description   TEXT,
       yaml_content  TEXT,
-      tags          TEXT,          -- JSON array stored as text
+      tags          JSON,
       exec_type     TEXT,
-      benchmarks    TEXT,          -- JSON stored as text
+      benchmarks    JSON,
       downloads     INTEGER DEFAULT 0,
       reviewed      BOOLEAN DEFAULT FALSE,
       published_at  TIMESTAMP,
@@ -206,31 +206,31 @@ Build 10–15 more skills to show range and validate all execution types.
 
 #### API Endpoints
 
-- [ ] `POST /skills` — Publish a new skill (authenticated)
+- [x] `POST /skills` — Publish a new skill (authenticated)
   - Validate YAML against spec before storing
   - Reject if version already exists (immutable versions)
   - Run security audit checks
-- [ ] `GET /skills` — List all skills (paginated)
+- [x] `GET /skills` — List all skills (paginated)
   - Support `?page=1&limit=20`
   - Return total count for pagination
-- [ ] `GET /skills/{author}/{id}` — Get latest version of a skill
-- [ ] `GET /skills/{author}/{id}/{version}` — Get specific version
-- [ ] `GET /skills/search?q={query}` — Search by name or tag
-- [ ] `GET /skills/search?tag={tag}` — Filter by tag
-- [ ] `GET /skills/search?type={exec_type}` — Filter by execution type
-- [ ] `DELETE /skills/{author}/{id}/{version}` — Yank a version (authenticated, author only)
+- [x] `GET /skills/{author}/{id}` — Get latest version of a skill
+- [x] `GET /skills/{author}/{id}/{version}` — Get specific version
+- [x] `GET /skills/search?q={query}` — Search by name or tag
+- [x] `GET /skills/search?tag={tag}` — Filter by tag
+- [x] `GET /skills/search?type={exec_type}` — Filter by execution type
+- [x] `DELETE /skills/{author}/{id}/{version}` — Yank a version (authenticated, author only)
 
 #### Rate Limiting
 
-- [ ] 60 requests/minute for read endpoints
-- [ ] 10 requests/minute for publish endpoint
+- [ ] 60 requests/minute for read endpoints — defer to deployment (add slowapi)
+- [ ] 10 requests/minute for publish endpoint — defer to deployment (add slowapi)
 
 #### Other
 
-- [ ] CORS configuration for frontend access
-- [ ] Health check endpoint: `GET /health`
-- [ ] Seed the database with all example skills on first run
-- [ ] Write `registry/api/README.md` with setup instructions
+- [x] CORS configuration for frontend access
+- [x] Health check endpoint: `GET /health`
+- [x] Seed the database with all example skills on first run
+- [x] Write `registry/api/README.md` with setup instructions
 
 ---
 

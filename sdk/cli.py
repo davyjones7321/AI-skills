@@ -9,6 +9,8 @@ Commands:
     aiskills run <skill.yaml>         Run a skill locally (dry-run)
     aiskills export <skill.yaml>      Export to a target framework
     aiskills info <skill.yaml>        Print skill summary
+    aiskills publish <skill.yaml>     Publish a skill to the registry
+    aiskills install <author/id>      Install a skill from the registry
 
 Usage examples:
     aiskills init my-summarizer
@@ -17,6 +19,9 @@ Usage examples:
     aiskills export my-summarizer/skill.yaml --target autogen --output tool.py
     aiskills export my-summarizer/skill.yaml --target crewai
     aiskills info my-summarizer/skill.yaml
+    aiskills publish my-summarizer/skill.yaml
+    aiskills install ai-skills-team/summarize-document
+    aiskills install ai-skills-team/summarize-document@1.0.0
 """
 
 import sys
@@ -24,6 +29,8 @@ import argparse
 import yaml
 import json
 from pathlib import Path
+from urllib import request, error
+from urllib.parse import urljoin
 
 
 # ── INIT ──────────────────────────────────────────────────────────────────────
@@ -121,7 +128,7 @@ def cmd_init(args):
     output_dir = Path(skill_id)
 
     if output_dir.exists():
-        print(f"❌ Directory '{skill_id}' already exists.")
+        print(f"Error: Directory '{skill_id}' already exists.")
         sys.exit(1)
 
     output_dir.mkdir()
@@ -135,10 +142,10 @@ def cmd_init(args):
     )
 
     print(f"""
-✅ Skill scaffolded: {skill_id}/
+OK - Skill scaffolded: {skill_id}/
 
-  📄 skill.yaml    ← Edit this to define your skill
-  📄 README.md     ← Document your skill
+   skill.yaml    <- Edit this to define your skill
+   README.md     <- Document your skill
 
 Next steps:
   cd {skill_id}
@@ -174,9 +181,9 @@ def cmd_validate(args):
         print(f"\nAuditing: {args.skill_path}\n{'─' * 40}")
         audit_res = scan_skill(args.skill_path)
         if audit_res.is_safe:
-            print("✅ No obvious security issues found (but always review code manually).")
+            print("OK - No obvious security issues found (but always review code manually).")
         else:
-            print("❌ Security audit found issues:\n")
+            print("FAIL - Security audit found issues:\n")
             for issue in audit_res.issues:
                 print(issue)
             for warning in audit_res.warnings:
@@ -199,7 +206,7 @@ EXPORTERS = {
 def cmd_export(args):
     target = args.target.lower()
     if target not in EXPORTERS:
-        print(f"❌ Unknown target '{target}'. Available: {', '.join(EXPORTERS.keys())}")
+        print(f"Error: Unknown target '{target}'. Available: {', '.join(EXPORTERS.keys())}")
         sys.exit(1)
 
     sdk_dir = Path(__file__).parent
@@ -217,7 +224,7 @@ def cmd_export(args):
         output = str(skill_dir / f"{target}_tool.py")
 
     export_fn(args.skill_path, output)
-    print(f"✅ Exported to {output} (target: {target})")
+    print(f"OK - Exported to {output} (target: {target})")
 
 
 # ── RUN ───────────────────────────────────────────────────────────────────────
@@ -237,12 +244,12 @@ def cmd_run(args):
         try:
             input_data = json.loads(args.input)
         except json.JSONDecodeError as e:
-            print(f"❌ Invalid JSON input: {e}")
+            print(f"Error: Invalid JSON input: {e}")
             sys.exit(1)
     elif args.input_file:
         input_path = Path(args.input_file)
         if not input_path.exists():
-            print(f"❌ Input file not found: {args.input_file}")
+            print(f"Error: Input file not found: {args.input_file}")
             sys.exit(1)
         with open(input_path, encoding="utf-8") as f:
             input_data = json.load(f)
@@ -285,6 +292,303 @@ def cmd_run(args):
         sys.exit(1)
 
 
+# ── PUBLISH ───────────────────────────────────────────────────────────────────
+
+def cmd_publish(args):
+    import importlib.util
+    sdk_dir = Path(__file__).parent
+
+    skill_path = Path(args.skill_path)
+    if not skill_path.exists():
+        print(f"Error: File not found: {args.skill_path}")
+        sys.exit(1)
+
+    # Step 1: Read and parse
+    with open(skill_path, encoding="utf-8") as f:
+        raw_content = f.read()
+
+    try:
+        data = yaml.safe_load(raw_content)
+    except yaml.YAMLError as e:
+        print(f"Error: Invalid YAML: {e}")
+        sys.exit(1)
+
+    skill = data.get("skill", {})
+    skill_id = skill.get("id", "unknown")
+    version = skill.get("version", "0.0.0")
+    author = skill.get("author", "unknown")
+
+    # Step 2: Validate
+    print(f"\n  Publishing: {author}/{skill_id}@{version}")
+    print(f"  {'─' * 40}")
+
+    spec = importlib.util.spec_from_file_location("validator", sdk_dir / "validator.py")
+    validator_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validator_module)
+    validate_skill = validator_module.validate_skill
+
+    result = validate_skill(str(skill_path))
+    if not result.valid:
+        print(f"\n  FAIL - Skill failed validation:\n")
+        print(result.report(verbose=True))
+        sys.exit(1)
+    print(f"  [1/4] Validation passed")
+
+    # Step 3: Security audit
+    sec_spec = importlib.util.spec_from_file_location("security", sdk_dir / "security.py")
+    sec_module = importlib.util.module_from_spec(sec_spec)
+    sec_spec.loader.exec_module(sec_module)
+    scan_skill = sec_module.scan_skill
+
+    audit_res = scan_skill(str(skill_path))
+    if not audit_res.is_safe:
+        print(f"  [2/4] Security audit found issues:")
+        for issue in audit_res.issues:
+            print(f"         {issue}")
+        for warning in audit_res.warnings:
+            print(f"         {warning}")
+        print(f"\n  Aborting publish. Fix security issues first.")
+        sys.exit(1)
+    print(f"  [2/4] Security audit passed")
+
+    # Step 4: Auth
+    auth_spec = importlib.util.spec_from_file_location("auth_config", sdk_dir / "auth_config.py")
+    auth_module = importlib.util.module_from_spec(auth_spec)
+    auth_spec.loader.exec_module(auth_module)
+    AuthConfig = auth_module.AuthConfig
+
+    config = AuthConfig()
+    token = config.get_token()
+
+    if not token:
+        print(f"  [3/4] Not authenticated.")
+        print(f"\n  Run: aiskills login --token <your-token> --username <your-name>")
+        print(f"  Or set the token in ~/.aiskills/config.json")
+        sys.exit(1)
+    print(f"  [3/4] Authenticated as: {config.get_username()}")
+
+    # Helper for date serialization
+    from datetime import date, datetime
+    def _make_json_safe(obj):
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        if isinstance(obj, dict):
+            return {k: _make_json_safe(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_make_json_safe(item) for item in obj]
+        return obj
+
+    # Step 5: Dry-run check
+    if args.dry_run:
+        print(f"  [4/4] DRY-RUN — would publish to: {config.registry_url}/skills")
+        print(f"\n  Payload:")
+        payload = {
+            "id": skill_id,
+            "author": author,
+            "version": version,
+            "name": skill.get("name", skill_id),
+            "description": skill.get("description", "").strip(),
+            "tags": skill.get("tags", []),
+            "exec_type": skill.get("execution", {}).get("type", "prompt"),
+            "benchmarks": _make_json_safe(skill.get("benchmarks", {})),
+            "yaml_content": raw_content,
+        }
+        print(json.dumps({k: v for k, v in payload.items() if k != "yaml_content"}, indent=2))
+        print(f"\n  (yaml_content: {len(raw_content)} bytes)")
+        print(f"\n  DRY-RUN complete. Remove --dry-run to publish.\n")
+        return
+
+    # Step 6: Upload to registry
+    execution = skill.get("execution", {})
+    benchmarks = skill.get("benchmarks", {})
+
+    payload = json.dumps({
+        "id": skill_id,
+        "author": author,
+        "version": version,
+        "name": skill.get("name", skill_id),
+        "description": skill.get("description", "").strip(),
+        "tags": skill.get("tags", []),
+        "exec_type": execution.get("type", "prompt"),
+        "benchmarks": _make_json_safe(benchmarks) if benchmarks else {},
+        "yaml_content": raw_content,
+    }).encode("utf-8")
+
+    registry_url = config.registry_url.rstrip("/")
+    url = f"{registry_url}/skills/"
+
+    req = request.Request(
+        url,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=30) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+            skill_url = f"{registry_url}/skills/{resp_data.get('author', author)}/{skill_id}"
+            print(f"  [4/4] Published successfully!")
+            print(f"\n  Skill URL: {skill_url}")
+            print(f"  Version:   {version}")
+            print(f"\n  Install with: aiskills install {resp_data.get('author', author)}/{skill_id}\n")
+    except error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        try:
+            detail = json.loads(body).get("detail", body)
+        except json.JSONDecodeError:
+            detail = body
+        print(f"  [4/4] FAILED: {e.code} — {detail}")
+        sys.exit(1)
+    except error.URLError as e:
+        print(f"  [4/4] FAILED: Cannot connect to registry at {registry_url}")
+        print(f"         {e.reason}")
+        print(f"\n  Is the registry server running? Start it with:")
+        print(f"    uvicorn registry.api.main:app --reload")
+        sys.exit(1)
+
+
+# ── INSTALL ───────────────────────────────────────────────────────────────────
+
+def cmd_install(args):
+    import importlib.util
+    sdk_dir = Path(__file__).parent
+
+    # Parse skill reference: author/skill-id or author/skill-id@version
+    skill_ref = args.skill_ref
+    version = None
+
+    if "@" in skill_ref:
+        skill_ref, version = skill_ref.rsplit("@", 1)
+
+    parts = skill_ref.split("/", 1)
+    if len(parts) != 2:
+        print(f"Error: Invalid skill reference '{args.skill_ref}'")
+        print(f"  Expected format: author/skill-id or author/skill-id@version")
+        print(f"  Example: aiskills install ai-skills-team/summarize-document")
+        sys.exit(1)
+
+    author, skill_id = parts
+
+    # Load auth config for registry URL
+    auth_spec = importlib.util.spec_from_file_location("auth_config", sdk_dir / "auth_config.py")
+    auth_module = importlib.util.module_from_spec(auth_spec)
+    auth_spec.loader.exec_module(auth_module)
+    AuthConfig = auth_module.AuthConfig
+
+    config = AuthConfig()
+    registry_url = config.registry_url.rstrip("/")
+
+    # Build API URL
+    if version:
+        api_url = f"{registry_url}/skills/{author}/{skill_id}/{version}"
+    else:
+        api_url = f"{registry_url}/skills/{author}/{skill_id}"
+
+    print(f"\n  Installing: {author}/{skill_id}" + (f"@{version}" if version else " (latest)"))
+    print(f"  {'─' * 40}")
+
+    # Fetch from registry
+    try:
+        req = request.Request(api_url, method="GET")
+        with request.urlopen(req, timeout=30) as resp:
+            resp_data = json.loads(resp.read().decode("utf-8"))
+    except error.HTTPError as e:
+        if e.code == 404:
+            print(f"  FAIL: Skill '{author}/{skill_id}" + (f"@{version}" if version else "") + "' not found in registry")
+        else:
+            body = e.read().decode("utf-8", errors="replace")
+            print(f"  FAIL: {e.code} — {body}")
+        sys.exit(1)
+    except error.URLError as e:
+        print(f"  FAIL: Cannot connect to registry at {registry_url}")
+        print(f"         {e.reason}")
+        print(f"\n  Is the registry server running? Start it with:")
+        print(f"    uvicorn registry.api.main:app --reload")
+        sys.exit(1)
+
+    yaml_content = resp_data.get("yaml_content", "")
+    installed_version = resp_data.get("version", "unknown")
+    reviewed = resp_data.get("reviewed", False)
+
+    if not yaml_content:
+        print(f"  FAIL: Skill has no YAML content")
+        sys.exit(1)
+
+    # Show warning for unreviewed skills
+    if not reviewed:
+        print(f"  [!] WARNING: This skill has NOT been reviewed. Inspect the skill.yaml before using.")
+
+    # Save to skills/ directory
+    install_dir = Path("skills") / skill_id
+    install_dir.mkdir(parents=True, exist_ok=True)
+    skill_file = install_dir / "skill.yaml"
+
+    skill_file.write_text(yaml_content, encoding="utf-8")
+    print(f"  [1/1] Saved to {skill_file}")
+    print(f"  Version: {installed_version}")
+
+    # Auto-export if requested
+    if args.export:
+        target = args.export.lower()
+        if target not in EXPORTERS:
+            print(f"\n  Warning: Unknown export target '{target}'. Skipping export.")
+            print(f"  Available: {', '.join(EXPORTERS.keys())}")
+        else:
+            sys.path.insert(0, str(sdk_dir))
+            module_path, func_name = EXPORTERS[target]
+            module = __import__(module_path, fromlist=[func_name])
+            export_fn = getattr(module, func_name)
+
+            output_file = str(install_dir / f"{target}_tool.py")
+            export_fn(str(skill_file), output_file)
+            print(f"  Exported to {output_file} (target: {target})")
+
+    print(f"\n  Done! Skill installed to: {install_dir}/\n")
+
+
+# ── LOGIN ─────────────────────────────────────────────────────────────────────
+
+def cmd_login(args):
+    import importlib.util
+    sdk_dir = Path(__file__).parent
+
+    auth_spec = importlib.util.spec_from_file_location("auth_config", sdk_dir / "auth_config.py")
+    auth_module = importlib.util.module_from_spec(auth_spec)
+    auth_spec.loader.exec_module(auth_module)
+    AuthConfig = auth_module.AuthConfig
+
+    config = AuthConfig()
+
+    if args.token and args.username:
+        config.save_token(args.token, args.username)
+        print(f"\n  OK - Logged in as: {args.username}")
+        print(f"  Token saved to: ~/.aiskills/config.json\n")
+    elif args.registry_url:
+        config.registry_url = args.registry_url
+        print(f"\n  OK - Registry URL set to: {args.registry_url}\n")
+    elif args.status:
+        if config.is_authenticated():
+            print(f"\n  Logged in as: {config.get_username()}")
+            print(f"  Registry:    {config.registry_url}\n")
+        else:
+            print(f"\n  Not logged in.")
+            print(f"  Registry:    {config.registry_url}")
+            print(f"\n  Run: aiskills login --token <your-token> --username <your-name>\n")
+    elif args.logout:
+        config.clear_token()
+        print(f"\n  OK - Logged out. Token cleared.\n")
+    else:
+        print(f"\n  Usage:")
+        print(f"    aiskills login --token <token> --username <name>   Save auth token")
+        print(f"    aiskills login --status                            Check login status")
+        print(f"    aiskills login --logout                            Clear saved token")
+        print(f"    aiskills login --registry-url <url>                Set registry URL\n")
+
+
 # ── INFO ──────────────────────────────────────────────────────────────────────
 
 def cmd_info(args):
@@ -298,9 +602,9 @@ def cmd_info(args):
     test_cases = benchmarks.get("test_cases", [])
 
     print(f"""
-╔══════════════════════════════════════════════╗
-║  ai-skills — Skill Info                      ║
-╚══════════════════════════════════════════════╝
+==============================
+  ai-skills -- Skill Info
+==============================
 
   ID:          {skill.get('id', '—')}
   Name:        {skill.get('name', '—')}
@@ -318,21 +622,21 @@ def cmd_info(args):
 
     for inp in inputs:
         req = "required" if inp.get("required") else f"optional, default={inp.get('default', 'null')}"
-        print(f"    • {inp['name']} ({inp.get('type', '?')}) — {req}")
+        print(f"    - {inp['name']} ({inp.get('type', '?')}) -- {req}")
 
     print(f"\n  Outputs ({len(outputs)}):")
     for out in outputs:
-        print(f"    • {out['name']} ({out.get('type', '?')})")
+        print(f"    - {out['name']} ({out.get('type', '?')})")
 
     print(f"\n  Compatible with: {', '.join(skill.get('compatible_with', ['—']))}")
 
     if benchmarks:
         print(f"\n  Benchmarks:")
         if "avg_latency_ms" in benchmarks:
-            print(f"    • Avg latency:  {benchmarks['avg_latency_ms']}ms")
+            print(f"    - Avg latency:  {benchmarks['avg_latency_ms']}ms")
         if "avg_cost_per_call_usd" in benchmarks:
-            print(f"    • Avg cost:     ${benchmarks['avg_cost_per_call_usd']:.4f} per call")
-        print(f"    • Test cases:   {len(test_cases)}")
+            print(f"    - Avg cost:     ${benchmarks['avg_cost_per_call_usd']:.4f} per call")
+        print(f"    - Test cases:   {len(test_cases)}")
 
     print()
 
@@ -349,8 +653,10 @@ Examples:
   aiskills init my-summarizer
   aiskills validate my-summarizer/skill.yaml
   aiskills export my-summarizer/skill.yaml --target langchain
-  aiskills export my-summarizer/skill.yaml --target autogen --output tool.py
   aiskills info my-summarizer/skill.yaml
+  aiskills publish my-summarizer/skill.yaml
+  aiskills install ai-skills-team/summarize-document
+  aiskills login --token <token> --username <name>
         """
     )
 
@@ -383,6 +689,25 @@ Examples:
                        help="Actually call LLM/API (default is dry-run)")
     p_run.add_argument("--model", "-m", help="Override model (for prompt type)")
 
+    # publish
+    p_pub = subparsers.add_parser("publish", help="Publish a skill to the registry")
+    p_pub.add_argument("skill_path", help="Path to skill.yaml")
+    p_pub.add_argument("--dry-run", action="store_true",
+                       help="Show what would be published without uploading")
+
+    # install
+    p_inst = subparsers.add_parser("install", help="Install a skill from the registry")
+    p_inst.add_argument("skill_ref", help="Skill reference (e.g. author/skill-id or author/skill-id@1.0.0)")
+    p_inst.add_argument("--export", help="Auto-export after install (e.g. langchain, autogen, crewai)")
+
+    # login
+    p_login = subparsers.add_parser("login", help="Manage registry authentication")
+    p_login.add_argument("--token", help="Auth token to save")
+    p_login.add_argument("--username", help="Your username")
+    p_login.add_argument("--status", action="store_true", help="Show login status")
+    p_login.add_argument("--logout", action="store_true", help="Clear saved token")
+    p_login.add_argument("--registry-url", help="Set custom registry URL")
+
     # info
     p_info = subparsers.add_parser("info", help="Print skill summary")
     p_info.add_argument("skill_path", help="Path to skill.yaml")
@@ -394,6 +719,9 @@ Examples:
         "validate": cmd_validate,
         "export": cmd_export,
         "run": cmd_run,
+        "publish": cmd_publish,
+        "install": cmd_install,
+        "login": cmd_login,
         "info": cmd_info,
     }
 

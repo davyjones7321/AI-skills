@@ -698,7 +698,7 @@ def call_endpoint(url, method, headers, params, max_retries=3):
 - [ ] Implement JSON output parser with fallbacks
 - [ ] Add retry logic for `tool_call` execution
 - [x] Use SQLite instead of PostgreSQL for MVP registry
-- [x] Build static frontend instead of Next.js for MVP
+- [ ] Build static frontend instead of Next.js for MVP
 - [ ] Add rate limiting to registry API
 
 ### Do Post-Launch

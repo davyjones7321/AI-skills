@@ -2,6 +2,7 @@ from typing import List, Optional, Any, Dict
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
+
 class SkillBase(BaseModel):
     name: str
     description: str
@@ -9,10 +10,13 @@ class SkillBase(BaseModel):
     exec_type: str
     benchmarks: Optional[Dict[str, Any]] = None
 
+
 class SkillCreate(SkillBase):
     id: str
+    author: str
     version: str
     yaml_content: str
+
 
 class Skill(SkillBase):
     id: str
@@ -24,5 +28,17 @@ class Skill(SkillBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class SkillDetail(Skill):
     yaml_content: str
+
+
+class SkillListResponse(BaseModel):
+    skills: List[Skill]
+    total_count: int
+    page: int
+    limit: int
+
+
+class MessageResponse(BaseModel):
+    message: str

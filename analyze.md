@@ -18,6 +18,43 @@
 
 ---
 
+### 2026-03-20
+
+#### `[2026-03-20 17:03 IST]` — Bug Fixes & Documentation Updates
+
+**Type:** Bug Fix / Documentation
+
+**Summary of changes:**
+- Fixed tag pagination bug in `search_skills` — `total_count` was computed before Python post-filter when `tag` param was used, causing incorrect pagination metadata. Fixed by collecting all filtered results first, then slicing for the page.
+- Fixed `publish` endpoint — added YAML parsing validation before DB insert. Returns HTTP 422 if content is not valid YAML or missing top-level `skill` key.
+- Created `registry/api/README.md` — setup instructions, endpoint reference, auth docs, environment variable table, known MVP limitations.
+
+**Files modified:** `registry/api/routers/skills.py`
+
+**Files created:** `registry/api/README.md`
+
+---
+
+#### `[2026-03-20 16:25 IST]` — Registry Backend + CLI Publish/Install Complete
+
+**Type:** Feature / Infrastructure
+
+**Phase 3** — Major additions to enable the public registry:
+
+1. **Registry Backend API**
+   - Implemented `registry.api.routers.skills` with pagination, text search (`q`), tag filtering (SQLite JSON workaround handled in Python), execution type tracking, and semver sorting for `get_latest`.
+   - Added author-only `DELETE` endpoint for yanking specific versions.
+   - Added MVP token-based authentication via `registry.api.routers.auth` (uses `Authorization: Bearer <token>` mapped to usernames via `.env`).
+   - Created `registry/api/seed.py` that recursively parses `examples/*/skill.yaml` to prepopulate the SQLite DB with 19 example skills. 
+   - **Note on Date Parsing:** Added a `_make_json_safe` helper to handle date serialization. This is required because PyYAML automatically parses bare ISO dates (like `last_evaluated: 2026-02-01` in the benchmarks section) into Python `datetime.date` objects. SQLAlchemy's JSON column fails to serialize these objects natively, so the helper recursively converts them back to ISO strings before database insertion.
+   - Updated schemas with `SkillListResponse` for future frontend pagination.
+
+2. **CLI Commands (`aiskills publish` & `aiskills install`)**
+   - Added `aiskills login` and `sdk/auth_config.py` to manage `~/.aiskills/config.json`.
+   - Added `aiskills publish` command: Validates → Audits for Security → Checks Auth → Uploads YAML payload to the registry API. Added custom date serialization handler. Supported `publish --dry-run`.
+   - Added `aiskills install` command: Fetches YAML from registry (`author/id` or `author/id@version`) and saves to local `skills/` directory. Added `--export <target>` flag for automatic scaffolding post-install.
+
+---
 ### 2026-03-05
 
 #### `[2026-03-05 15:00 IST]` — `aiskills run` Command + GitHub Launch Prep

@@ -349,7 +349,7 @@ All three exporters handle: required vs optional inputs, default values, Optiona
 
 ### ✅ The CLI (`sdk/cli.py`)
 
-A unified command-line interface with five working commands:
+A unified command-line interface with the following working commands:
 
 | Command | What It Does |
 |---------|--------------|
@@ -358,6 +358,9 @@ A unified command-line interface with five working commands:
 | `aiskills export <skill.yaml> --target <framework>` | Exports skill to LangChain, AutoGen, or CrewAI |
 | `aiskills run <skill.yaml> --input <json>` | Run a skill locally (dry-run or live) |
 | `aiskills info <skill.yaml>` | Prints a formatted summary of the skill |
+| `aiskills login` | Authenticate with the registry to save your token locally |
+| `aiskills publish <skill.yaml>` | Validates, security audits, and securely publishes a local skill to the registry |
+| `aiskills install <author>/<id>` | Grabs a skill from the registry and downloads it locally |
 
 ### ✅ The Skill Runner (`sdk/runner.py`)
 
@@ -368,9 +371,20 @@ A local execution engine that runs skills directly, supporting all four executio
 - **`tool_call`** skills resolve environment variables and make HTTP requests
 - **`chain`** skills display the planned execution flow (full chain execution is planned for a future release)
 
+### ✅ Registry Backend API (`registry/api/`)
+
+A FastAPI server that makes the registry real. It implements pagination, tag filtering, execution type tracking, semver version resolution, MVP token-based authentication, and SQLite persistence.
+
+Supported endpoints:
+- `POST /skills` — Publish a new skill (Requires auth)
+- `GET /skills` — List all skills (paginated)
+- `GET /skills/{author}/{id}` — Get latest version of a skill
+- `GET /skills/search?q=...&tag=...` — Search by query, tag, or execution type
+- `DELETE /skills/{author}/{id}/{version}` — Yank a version (author only)
+
 ### ✅ The Registry Prototype (`registry/`)
 
-- `index.json` — a structured JSON file listing all 5 example skills with metadata and benchmark data. This is the prototype of what the live registry API will serve.
+- `index.json` — a structured JSON file listing example skills with metadata and benchmark data.
 - `README.md` — full documentation of the registry including publish rules, the REST API design, and the roadmap.
 
 ### ✅ Package Configuration (`pyproject.toml`)
@@ -389,48 +403,7 @@ Defines optional dependency groups for each supported framework (`langchain`, `a
 
 Everything below is designed and planned but not yet implemented.
 
-### 🔲 Registry Backend API
-
-A server that makes the registry real and writable. Developers need to be able to publish skills and have them stored and served.
-
-**What to build:** A FastAPI Python application with these endpoints:
-
-```
-POST /skills                            Publish a new skill
-GET  /skills                            List all skills (paginated)
-GET  /skills/{author}/{id}              Get latest version of a skill
-GET  /skills/{author}/{id}/{version}    Get specific version
-GET  /skills/search?q={query}           Search by name or tag
-GET  /skills/search?tag={tag}           Filter by tag
-DELETE /skills/{author}/{id}/{version}  Yank a version (authenticated)
-```
-
-**Database:** SQLite (start simple, migrate to PostgreSQL later if needed) with a `skills` table:
-
-```sql
-CREATE TABLE skills (
-    id            TEXT,
-    author        TEXT,
-    version       TEXT,
-    name          TEXT,
-    description   TEXT,
-    yaml_content  TEXT,
-    tags          TEXT[],
-    exec_type     TEXT,
-    benchmarks    JSONB,
-    downloads     INTEGER DEFAULT 0,
-    published_at  TIMESTAMP,
-    PRIMARY KEY (author, id, version)
-);
-```
-
-**Auth:** GitHub OAuth — developers log in with their GitHub account. Their GitHub username becomes their `author` name in the registry.
-
-**Hosting:** Railway.app or Render.com (~$20/month to start).
-
-**Estimated effort:** 2–3 weeks
-
----
+Everything below is designed and planned but not yet implemented.
 
 ### 🔲 Registry Frontend Website
 
@@ -464,38 +437,6 @@ When a skill is published to the registry, its test cases should be run automati
 **Technology:** Synchronous execution initially. Redis job queue and Python worker process to be added later. OpenAI API for running prompt-type skills.
 
 **Estimated effort:** 2–3 weeks
-
----
-
-### 🔲 `aiskills publish` Command
-
-The CLI command that connects to the registry backend and uploads a skill. Currently the CLI has `init`, `validate`, `export`, and `info` — but not `publish`.
-
-**What it should do:**
-
-1. Read `skill.yaml`
-2. Run `validate` — abort if invalid
-3. Run all test cases locally
-4. Authenticate with the registry (GitHub OAuth token)
-5. Upload the skill YAML to the registry API
-6. Print the URL where the skill is now live
-
-**Estimated effort:** 3–5 days
-
----
-
-### 🔲 `aiskills install` Command
-
-The CLI command that downloads a skill from the registry.
-
-```bash
-aiskills install jane/summarize-document
-aiskills install jane/summarize-document@1.2.0
-```
-
-This should download the `skill.yaml` into a local `skills/` directory and optionally immediately export it to a target framework.
-
-**Estimated effort:** 1–2 days
 
 ---
 
@@ -907,11 +848,11 @@ aiskills info skill.yaml
 ### Coming soon:
 
 ```bash
-aiskills run skill.yaml --input '{"text": "hello"}'   # Run locally
 aiskills test skill.yaml                               # Run test cases
 aiskills publish                                       # Publish to registry
 aiskills install author/skill-id                       # Install from registry
 aiskills install author/skill-id@1.2.0                 # Install specific version
+aiskills migrate                                       # Migrate spec version
 ```
 
 ---
@@ -924,7 +865,7 @@ The registry is the public hub where skills are published and discovered. It is 
 
 ### Current state
 
-Right now the registry exists as a static prototype in `registry/index.json`. It lists all 5 example skills with their metadata and benchmark data. The REST API design is fully specified in `registry/README.md`.
+Right now the registry exists as a static prototype in `registry/index.json`. It lists all 19 example skills with their metadata and benchmark data. The REST API design is fully specified in `registry/README.md`.
 
 ### Planned REST API
 
@@ -967,7 +908,22 @@ jane-doe/extract-invoice@2.1.0
 | Registry prototype | JSON file |
 | Package config | pyproject.toml (setuptools) |
 
-## 6. Effort & Timeline Estimate (Adjusted MVP)
+### Planned (what to build)
+
+| Component | Technology | Why |
+|-----------|-----------|-----|
+| Registry backend API | FastAPI + SQLite (MVP) | Fast, typed, async Python API |
+| Registry hosting | Railway.app or Render | Backend is partially built; hosting pending |
+| Registry frontend | Next.js + Tailwind CSS | Fast, modern, free hosting on Vercel |
+| Auth | GitHub OAuth | Developers already have GitHub accounts |
+| Benchmark CI | Redis + Python worker | Reliable job queue for running test cases |
+| Skill decay monitor | Scheduled Python jobs | Periodic re-runs of published skill tests |
+
+---
+
+## 15. Roadmap
+
+### Effort & Timeline Estimate (Adjusted MVP)
 
 As a solo developer, building the entire ecosystem takes time. Here is the adjusted realistic timeline focusing on MVP features (SQLite, static frontend, synchronous benchmarks):
 
@@ -980,26 +936,11 @@ As a solo developer, building the entire ecosystem takes time. Here is the adjus
 | **3** | CLI `publish` / `install` | 1 week | 1 week | 🔴 Pending |
 | **3** | Registry Backend (SQLite) | 1–2 weeks | 2–3 weeks | 🔴 Pending |
 | **3** | Registry Frontend (Static) | 2–3 weeks | 1–2 weeks | 🔴 Pending |
-| **4** | CLI `run` (Local Exec) | 3–5 days | 1–2 weeks | 🔴 Pending |
+| **4** | CLI `run` (Local Exec) | 3–5 days | 1–2 weeks | ✅ Done |
 | **4** | CLI `test` (Benchmarks) | 3–5 days | 1 week | 🔴 Pending |
 | **6** | Server-side CI Runner | 1–2 weeks | 1-2 weeks | 🔴 Pending |
 
 **Total time to v1.0 Launch:** ~10–12 weeks of focused effort.
-
-### Planned (what to build)
-
-| Component | Technology | Why |
-|-----------|-----------|-----|
-| Registry backend API | FastAPI + PostgreSQL | Fast, typed, async Python API |
-| Registry hosting | Railway.app or Render | Simple, affordable, auto-deploys from GitHub |
-| Registry frontend | Next.js + Tailwind CSS | Fast, modern, free hosting on Vercel |
-| Auth | GitHub OAuth | Developers already have GitHub accounts |
-| Benchmark CI | Redis + Python worker | Reliable job queue for running test cases |
-| Skill decay monitor | Scheduled Python jobs | Periodic re-runs of published skill tests |
-
----
-
-## 15. Roadmap
 
 ### Phase 1 — Foundation (Complete ✅)
 
