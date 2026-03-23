@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from registry.api.config import settings
 from registry.api.database import engine, Base
 from registry.api.routers import skills, auth
+from registry.api.seed import seed_database
+
 
 # Create DB tables (simplistic migration for MVP)
 Base.metadata.create_all(bind=engine)
@@ -29,6 +31,10 @@ app.add_middleware(
 
 app.include_router(skills.router)
 app.include_router(auth.router)
+
+@app.on_event("startup")
+async def startup_event():
+    seed_database()
 
 @app.get("/health")
 def health_check():
