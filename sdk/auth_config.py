@@ -14,10 +14,10 @@ Usage:
 """
 
 import json
+import os
 from pathlib import Path
 
-
-DEFAULT_REGISTRY_URL = "http://localhost:8000"
+DEFAULT_REGISTRY_URL = os.environ.get("AISKILLS_REGISTRY_URL", "https://ai-skills-production-f4f0.up.railway.app")
 CONFIG_DIR = Path.home() / ".aiskills"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 

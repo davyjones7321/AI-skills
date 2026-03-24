@@ -1,7 +1,16 @@
 from sqlalchemy import Column, String, Text, Integer, JSON, DateTime, Boolean
 from sqlalchemy.sql import func
 from registry.api.database import Base
+from datetime import datetime
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    github_id = Column(Integer, unique=True, nullable=False)
+    username = Column(String, unique=True, nullable=False)
+    avatar_url = Column(String, nullable=True)
+    token = Column(String, unique=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 class Skill(Base):
     __tablename__ = "skills"
 

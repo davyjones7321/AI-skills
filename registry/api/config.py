@@ -11,8 +11,11 @@ class Settings(BaseSettings):
     registry_url: str = "http://localhost:8000"
 
     # GitHub OAuth (for future full implementation)
-    github_client_id: str = "mock-client-id"
-    github_client_secret: str = "mock-client-secret"
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    BASE_URL: str = ""
+    JWT_SECRET_KEY: str = ""
+    JWT_EXPIRE_HOURS: int = 168  # 7 days
 
     # MVP Auth — simple token-based auth
     # Format: JSON dict mapping tokens to usernames
