@@ -58,3 +58,11 @@ coverage.xml
 *.log
 .agents/
 .gemini/
+
+# Cleanup ignores
+registry.db
+*.db
+*.docx
+_test_api.py
+_seed_error.txt
+*.pyc

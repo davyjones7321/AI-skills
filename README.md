@@ -45,7 +45,7 @@ Read our detailed breakdown: **[How ai-skills Compares](./docs/COMPARISON.md)**.
 ### Install the CLI
 
 ```bash
-pip install aiskills
+pip install ai-skills-sdk
 ```
 
 ### Create your first skill
