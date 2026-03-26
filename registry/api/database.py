@@ -15,6 +15,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+
+def run_migrations() -> None:
+    with engine.begin() as connection:
+        try:
+            connection.exec_driver_sql("ALTER TABLE users ADD COLUMN email TEXT")
+        except Exception:
+            pass
+
+        try:
+            connection.exec_driver_sql("ALTER TABLE users ADD COLUMN last_login TEXT")
+        except Exception:
+            pass
+
+
 def get_db():
     db = SessionLocal()
     try:

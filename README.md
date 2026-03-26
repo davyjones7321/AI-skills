@@ -109,8 +109,8 @@ aiskills run skill.yaml --input-file input.json --execute
 ### Publish to the registry
 
 ```bash
-# Authenticate with your token
-aiskills login --token "my-token" --username "my-username"
+# Authenticate via GitHub OAuth
+aiskills login
 
 # Publish your skill to the registry
 aiskills publish skill.yaml
@@ -125,6 +125,20 @@ aiskills install ai-skills-team/summarize-document
 # Download and immediately auto-export it to LangChain!
 aiskills install ai-skills-team/summarize-document --export langchain
 ```
+
+### Use the registry web app (MVP)
+
+```bash
+cd registry/frontend
+npm install
+npm run dev
+```
+
+Then open `http://localhost:3000`:
+- `/` — marketing + discovery homepage
+- `/skills` — browse/search with filters and pagination
+- `/skills/{author}/{id}` — full skill detail page
+- `/publish` — publishing guide
 
 ---
 
@@ -157,6 +171,7 @@ ai-skills/
 │   └── exporters/          ← Framework adapters
 └── registry/
     ├── api/                ← FastAPI Registry Backend Server
+    ├── frontend/           ← Next.js registry web app (homepage, browse, detail, publish)
     └── index.json          ← Prototype registry index
 ```
 
@@ -199,3 +214,9 @@ We're in early days — contributions, feedback, and ideas are very welcome.
 ## License
 
 MIT — free to use, modify, and distribute.
+
+---
+
+## Session Update — 2026-03-26
+
+GitHub OAuth implementation for the registry was completed in this session across the backend, frontend, and CLI. The backend now uses signed JWTs with proper verification, GitHub OAuth state validation, frontend callback redirects, stateless logout, and user email plus last-login persistence. The frontend now includes `/login`, `/auth/callback`, an auth context/provider, and dynamic signed-in header state. The CLI `aiskills login` flow was updated to complete browser-based auth without manual token paste, and `registry/api/.env.example` was added with the required auth variables.

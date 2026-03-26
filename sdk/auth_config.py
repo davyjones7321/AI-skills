@@ -15,7 +15,12 @@ Usage:
 
 import json
 import os
+import threading
+import webbrowser
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from urllib import error, request
+from urllib.parse import parse_qs, urlencode, urlparse
 
 DEFAULT_REGISTRY_URL = os.environ.get("AISKILLS_REGISTRY_URL", "https://ai-skills-production-f4f0.up.railway.app")
 CONFIG_DIR = Path.home() / ".aiskills"
@@ -73,6 +78,74 @@ class AuthConfig:
         self._data["auth_token"] = token
         self._data["username"] = username
         self._save()
+
+    def complete_oauth_login(self, timeout_seconds: int = 300) -> tuple[str, str]:
+        """Complete browser-based GitHub OAuth without manual token paste."""
+        token_holder: dict[str, str | None] = {"token": None}
+        done = threading.Event()
+
+        class OAuthCallbackHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                parsed = urlparse(self.path)
+                params = parse_qs(parsed.query)
+                token = params.get("token", [None])[0]
+
+                if parsed.path != "/callback" or not token:
+                    self.send_response(400)
+                    self.send_header("Content-Type", "text/plain; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(b"Authentication failed. You can close this window.")
+                    done.set()
+                    return
+
+                token_holder["token"] = token
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>Login complete.</h1><p>You can close this window.</p></body></html>")
+                done.set()
+
+            def log_message(self, format, *args):  # noqa: A003
+                return
+
+        server = HTTPServer(("127.0.0.1", 0), OAuthCallbackHandler)
+        port = server.server_address[1]
+        callback_url = f"http://127.0.0.1:{port}/callback"
+        login_url = f"{self.registry_url.rstrip('/')}/auth/github?{urlencode({'cli': 'true', 'next': callback_url})}"
+
+        server_thread = threading.Thread(target=server.handle_request, daemon=True)
+        server_thread.start()
+
+        print("Opening GitHub login in your browser...")
+        print(login_url)
+        webbrowser.open(login_url)
+
+        completed = done.wait(timeout_seconds)
+        server.server_close()
+
+        if not completed or not token_holder["token"]:
+            raise RuntimeError("Timed out waiting for the OAuth callback")
+
+        token = token_holder["token"]
+        if token is None:
+            raise RuntimeError("OAuth callback did not include a token")
+
+        req = request.Request(
+            f"{self.registry_url.rstrip('/')}/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        try:
+            with request.urlopen(req, timeout=10) as resp:
+                user_data = json.loads(resp.read().decode("utf-8"))
+        except error.HTTPError as exc:
+            raise RuntimeError(f"Failed to verify token: {exc.code}") from exc
+
+        username = user_data.get("username")
+        if not isinstance(username, str) or not username:
+            raise RuntimeError("Authenticated user response did not include a username")
+
+        self.save_token(token, username)
+        return token, username
 
     def clear_token(self):
         """Remove stored auth credentials."""

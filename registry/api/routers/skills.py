@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
-from typing import List, Optional
+from sqlalchemy import or_
+from typing import Any, Dict, List, Optional
+import json
 import yaml
 
 from registry.api import models, schemas
@@ -11,18 +12,100 @@ from registry.api.routers.auth import get_current_user
 router = APIRouter(prefix="/skills", tags=["skills"])
 
 
+def _build_skill_detail(skill: models.Skill) -> schemas.SkillDetail:
+    """Build a detail payload with structured fields parsed from yaml_content."""
+    tags: List[str] = []
+    if isinstance(skill.tags, str):
+        try:
+            loaded_tags = json.loads(skill.tags)
+            if isinstance(loaded_tags, list):
+                tags = loaded_tags
+        except Exception:
+            tags = []
+    elif isinstance(skill.tags, list):
+        tags = skill.tags
+
+    benchmarks: Dict[str, Any] = {}
+    if isinstance(skill.benchmarks, str):
+        try:
+            loaded_benchmarks = json.loads(skill.benchmarks)
+            if isinstance(loaded_benchmarks, dict):
+                benchmarks = loaded_benchmarks
+        except Exception:
+            benchmarks = {}
+    elif isinstance(skill.benchmarks, dict):
+        benchmarks = skill.benchmarks
+
+    try:
+        parsed_yaml = yaml.safe_load(skill.yaml_content)
+    except Exception:
+        parsed_yaml = {}
+
+    parsed: Dict[str, Any] = {}
+    if isinstance(parsed_yaml, dict):
+        skill_block = parsed_yaml.get("skill", parsed_yaml)
+        if isinstance(skill_block, dict):
+            parsed = skill_block
+
+    return schemas.SkillDetail(
+        id=skill.id,
+        author=skill.author,
+        version=skill.version,
+        name=skill.name,
+        description=skill.description,
+        tags=tags,
+        exec_type=skill.exec_type,
+        benchmarks=benchmarks,
+        downloads=skill.downloads,
+        published_at=skill.published_at,
+        reviewed=skill.reviewed,
+        yaml_content=skill.yaml_content,
+        inputs=parsed.get("inputs", []) if isinstance(parsed.get("inputs", []), list) else [],
+        outputs=parsed.get("outputs", []) if isinstance(parsed.get("outputs", []), list) else [],
+        execution=parsed.get("execution", {}) if isinstance(parsed.get("execution", {}), dict) else {},
+        compatible_with=parsed.get("compatible_with", []) if isinstance(parsed.get("compatible_with", []), list) else [],
+    )
+
+
+def _sort_skills(skills: List[models.Skill], sort: str) -> List[models.Skill]:
+    if sort == "most_downloaded":
+        return sorted(skills, key=lambda skill: skill.downloads or 0, reverse=True)
+    if sort == "lowest_latency":
+        def latency_key(skill: models.Skill) -> float:
+            benchmarks = skill.benchmarks if isinstance(skill.benchmarks, dict) else {}
+            latency = benchmarks.get("avg_latency_ms")
+            if isinstance(latency, (int, float)):
+                return float(latency)
+            return float("inf")
+
+        return sorted(skills, key=lambda skill: (latency_key(skill), -(skill.downloads or 0)))
+    # Default newest
+    return sorted(skills, key=lambda skill: skill.published_at or 0, reverse=True)
+
+
+def _paginate(skills: List[models.Skill], page: int, limit: int) -> List[models.Skill]:
+    skip = (page - 1) * limit
+    return skills[skip: skip + limit]
+
+
 # ── LIST ──────────────────────────────────────────────────────────────────────
 
 @router.get("/", response_model=schemas.SkillListResponse)
 def list_skills(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
+    sort: str = Query("newest", description="Sort order: newest | most_downloaded | lowest_latency"),
     db: Session = Depends(get_db)
 ):
     """List all skills with pagination."""
-    total = db.query(func.count(models.Skill.id)).scalar()
-    skip = (page - 1) * limit
-    skills = db.query(models.Skill).offset(skip).limit(limit).all()
+    valid_sorts = {"newest", "most_downloaded", "lowest_latency"}
+    if sort not in valid_sorts:
+        raise HTTPException(status_code=400, detail=f"Invalid sort. Must be one of: {', '.join(sorted(valid_sorts))}")
+
+    all_skills = db.query(models.Skill).all()
+    sorted_skills = _sort_skills(all_skills, sort)
+    total = len(sorted_skills)
+    skills = _paginate(sorted_skills, page, limit)
     return schemas.SkillListResponse(
         skills=skills,
         total_count=total,
@@ -40,9 +123,14 @@ def search_skills(
     type: Optional[str] = Query(None, description="Filter by execution type (prompt, tool_call, code, chain)"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    sort: str = Query("newest", description="Sort order: newest | most_downloaded | lowest_latency"),
     db: Session = Depends(get_db)
 ):
     """Search skills by name, description, tag, or execution type."""
+    valid_sorts = {"newest", "most_downloaded", "lowest_latency"}
+    if sort not in valid_sorts:
+        raise HTTPException(status_code=400, detail=f"Invalid sort. Must be one of: {', '.join(sorted(valid_sorts))}")
+
     query = db.query(models.Skill)
 
     if q:
@@ -66,30 +154,47 @@ def search_skills(
             raise HTTPException(status_code=400, detail=f"Invalid type. Must be one of: {', '.join(valid_types)}")
         query = query.filter(models.Skill.exec_type == type.lower())
 
+    results = query.all()
+
     if tag:
-        # Fetch all matching results first to apply Python post-filter
-        results = query.all()
         tag_lower = tag.lower()
         results = [
             s for s in results
             if s.tags and any(t.lower() == tag_lower for t in (s.tags if isinstance(s.tags, list) else []))
         ]
-        total = len(results)
-        
-        # Slicing for pagination
-        skip = (page - 1) * limit
-        results = results[skip:skip + limit]
-    else:
-        total = query.count()
-        skip = (page - 1) * limit
-        results = query.offset(skip).limit(limit).all()
+
+    sorted_results = _sort_skills(results, sort)
+    total = len(sorted_results)
+    paged_results = _paginate(sorted_results, page, limit)
 
     return schemas.SkillListResponse(
-        skills=results,
+        skills=paged_results,
         total_count=total,
         page=page,
         limit=limit,
     )
+
+
+@router.get("/tags", response_model=schemas.TagListResponse)
+def list_tags(db: Session = Depends(get_db)):
+    """Return a deduplicated list of all tags in published skills."""
+    query = db.query(models.Skill)
+    if hasattr(models.Skill, "published"):
+        query = query.filter(getattr(models.Skill, "published") == True)  # noqa: E712
+
+    all_tags: List[str] = []
+    for skill in query.all():
+        raw_tags = skill.tags
+        try:
+            tags = json.loads(raw_tags) if isinstance(raw_tags, str) else raw_tags
+        except Exception:
+            tags = []
+
+        if isinstance(tags, list):
+            all_tags.extend(tag for tag in tags if isinstance(tag, str) and tag.strip())
+
+    unique_tags = sorted(set(tag.strip() for tag in all_tags if tag.strip()), key=str.lower)
+    return schemas.TagListResponse(tags=unique_tags)
 
 
 # ── PUBLISH ───────────────────────────────────────────────────────────────────
@@ -98,11 +203,11 @@ def search_skills(
 def publish_skill(
     skill: schemas.SkillCreate,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     """Publish a new skill to the registry (requires authentication)."""
     # Override author with authenticated user
-    author = current_user
+    author = current_user.username
 
     # Check if this exact version already exists (immutable versions)
     existing = db.query(models.Skill).filter_by(
@@ -139,7 +244,7 @@ def publish_skill(
     db.add(db_skill)
     db.commit()
     db.refresh(db_skill)
-    return db_skill
+    return _build_skill_detail(db_skill)
 
 
 # ── GET LATEST ────────────────────────────────────────────────────────────────
@@ -162,7 +267,7 @@ def get_skill_latest(author: str, skill_id: str, db: Session = Depends(get_db)):
 
     # Sort by semver (descending) and return the latest
     latest = sorted(skills, key=lambda s: _semver_key(s.version), reverse=True)[0]
-    return latest
+    return _build_skill_detail(latest)
 
 
 # ── GET SPECIFIC VERSION ──────────────────────────────────────────────────────
@@ -183,7 +288,7 @@ def get_skill_version(
 
     if not skill:
         raise HTTPException(status_code=404, detail=f"Skill '{author}/{skill_id}@{version}' not found")
-    return skill
+    return _build_skill_detail(skill)
 
 
 # ── DELETE (YANK) ─────────────────────────────────────────────────────────────
@@ -194,10 +299,10 @@ def delete_skill_version(
     skill_id: str,
     version: str,
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user),
+    current_user: models.User = Depends(get_current_user),
 ):
     """Yank (delete) a specific version of a skill. Author only."""
-    if current_user != author:
+    if current_user.username != author:
         raise HTTPException(status_code=403, detail="You can only delete your own skills")
 
     skill = db.query(models.Skill).filter_by(

@@ -50,3 +50,7 @@ Want me to draft the full technical spec for this hub vision — what needs to b
 
 
 ---------------------------------------------------------------------------------------
+
+## Session Update — 2026-03-26
+
+The GitHub OAuth foundation described here is now implemented. The registry backend has real OAuth state handling and JWT-based identity, the frontend can complete browser login and maintain session state, and the CLI can authenticate through the browser without asking the user to paste a token. That moves the project closer to the "real accounts, real hub" direction described above.

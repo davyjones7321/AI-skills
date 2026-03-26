@@ -2,6 +2,15 @@
 
 The public registry for ai-skills compatible skills.
 
+## Current Web App (MVP)
+
+The registry frontend is now implemented in `registry/frontend` with:
+
+- `/` — Homepage (discovery, stats, execution-type overview, recent skills)
+- `/skills` — Browse and search with URL-driven filters, sorting, and pagination
+- `/skills/{author}/{id}` — Detailed skill pages with schema, benchmarks, YAML source, and install command
+- `/publish` — Publishing guide
+
 ## Browse Skills
 
 | Skill | Author | Type | Avg Latency | Avg Cost |
@@ -75,10 +84,12 @@ The registry exposes a simple REST API:
 
 ```
 GET /skills                              List all skills (paginated)
+GET /skills/tags                         List all unique tags
 GET /skills/{author}/{id}               Get latest version
 GET /skills/{author}/{id}/{version}     Get specific version
 GET /skills/search?q={query}            Search by name or tag
 GET /skills/search?tag={tag}            Filter by tag
+GET /skills/search?type={exec_type}     Filter by execution type
 POST /skills                            Publish a skill (authenticated)
 ```
 
@@ -88,12 +99,16 @@ POST /skills                            Publish a skill (authenticated)
 # List all skills
 curl https://registry.ai-skills.dev/skills
 
+# List all tags
+curl https://registry.ai-skills.dev/skills/tags
+
 # Get a specific skill
 curl https://registry.ai-skills.dev/skills/ai-skills-team/summarize-document
 
 # Search
 curl "https://registry.ai-skills.dev/skills/search?q=summarize"
 curl "https://registry.ai-skills.dev/skills/search?tag=nlp"
+curl "https://registry.ai-skills.dev/skills/search?type=code&sort=lowest_latency"
 ```
 
 ---
@@ -128,7 +143,7 @@ The registry index follows this schema:
 
 ## Roadmap
 
-- [ ] Web UI for browsing the registry
+- [x] Web UI for browsing the registry (MVP in `registry/frontend`)
 - [ ] Automated benchmark CI on publish
 - [ ] Skill decay monitoring (automatic alerts when quality drops)
 - [ ] Dependency graph visualization

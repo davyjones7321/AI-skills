@@ -1,8 +1,8 @@
 # ai-skills — Complete Project Overview
 
-> Last updated: February 2026  
+> Last updated: March 25, 2026  
 > Spec Version: v0.1  
-> Status: Alpha — actively in development
+> Status: Alpha MVP — registry web app and API are live in development
 
 ---
 
@@ -157,7 +157,8 @@ Here is the complete flow, from a developer writing a skill to another developer
 │                                                                     │
 │  1. Finds skill on registry website or via CLI search               │
 │                                                                     │
-│  2. Runs:  aiskills install jane/summarize-document                 │
+│  2. Runs:  aiskills install ai-skills-team/summarize-document       │
+│            aiskills login  (Token MVP: GitHub OAuth)                │
 │     → Downloads skill.yaml locally                                  │
 │                                                                     │
 │  3. Runs:  aiskills export skill.yaml --target autogen              │
@@ -195,9 +196,9 @@ The SDK is what developers interact with daily. It must be fast, reliable, and p
 
 A public hub where skills are published, discovered, and installed. It consists of:
 
-- A **backend API** (to be built) — FastAPI server that stores skills and serves them
-- A **frontend website** (to be built) — searchable UI for browsing skills
-- A **registry index** (`registry/index.json`) — the current static prototype of the registry data
+- A **backend API** — FastAPI server that stores skills and serves them
+- A **frontend website** — Next.js UI for browsing, searching, reading, and publishing skills
+- A **registry index** (`registry/index.json`) — static prototype data retained for documentation/bootstrapping
 
 The registry is what creates the network effect and the community around the standard.
 
@@ -358,7 +359,7 @@ A unified command-line interface with the following working commands:
 | `aiskills export <skill.yaml> --target <framework>` | Exports skill to LangChain, AutoGen, or CrewAI |
 | `aiskills run <skill.yaml> --input <json>` | Run a skill locally (dry-run or live) |
 | `aiskills info <skill.yaml>` | Prints a formatted summary of the skill |
-| `aiskills login` | Authenticate with the registry to save your token locally |
+| `aiskills login` | Authenticate with the registry via GitHub OAuth |
 | `aiskills publish <skill.yaml>` | Validates, security audits, and securely publishes a local skill to the registry |
 | `aiskills install <author>/<id>` | Grabs a skill from the registry and downloads it locally |
 
@@ -373,7 +374,7 @@ A local execution engine that runs skills directly, supporting all four executio
 
 ### ✅ Registry Backend API (`registry/api/`)
 
-A FastAPI server that makes the registry real. It implements pagination, tag filtering, execution type tracking, semver version resolution, MVP token-based authentication, and SQLite persistence.
+A FastAPI server that makes the registry real. It implements pagination, tag filtering, execution type tracking, semver version resolution, GitHub OAuth authentication, and SQLite persistence.
 
 Supported endpoints:
 - `POST /skills` — Publish a new skill (Requires auth)
@@ -401,24 +402,23 @@ Defines optional dependency groups for each supported framework (`langchain`, `a
 
 ## 7. What Still Needs to Be Built
 
-Everything below is designed and planned but not yet implemented.
+The core SDK, registry backend, and registry frontend MVP are now implemented.  
+The items below are the remaining work to reach a production-ready v1.
 
-Everything below is designed and planned but not yet implemented.
+### ✅ Registry Frontend Website (MVP)
 
-### 🔲 Registry Frontend Website
+A Next.js website where developers can browse, search, and publish skills is now implemented.
 
-A website where developers can browse, search, and read skill documentation.
-
-**Pages to build:**
+**Implemented pages:**
 
 - `/` — Homepage: search bar, featured skills, stats (total skills, total authors)
 - `/skills` — Browse all skills with filters by tag and execution type
-- `/skills/{author}/{id}` — Skill detail page showing: schema, benchmark scores, install command, framework compatibility badges, version history
+- `/skills/{author}/{id}` — Skill detail page showing: schema, benchmark scores, install command, framework compatibility badges, version view, YAML source
 - `/publish` — Guide for how to publish a skill
 
-**Technology:** Static site with client-side search (e.g. Fuse.js) hosted on GitHub Pages for MVP. Next.js + Vercel for v2.
+**Technology:** Next.js + Tailwind CSS (MVP), designed for Vercel deployment.
 
-**Estimated effort:** 3–4 weeks
+**Status:** Complete (MVP). Iteration continues for docs/authors/auth flows.
 
 ---
 
@@ -933,9 +933,9 @@ As a solo developer, building the entire ecosystem takes time. Here is the adjus
 | **1** | Export Adapters | 1 week | 1 week | ✅ Done |
 | **2** | Example Library (19 skills) | 1 week | 1 week | ✅ Done |
 | **2** | Security & Launch Docs | 1 week | 1 week | ✅ Done |
-| **3** | CLI `publish` / `install` | 1 week | 1 week | 🔴 Pending |
-| **3** | Registry Backend (SQLite) | 1–2 weeks | 2–3 weeks | 🔴 Pending |
-| **3** | Registry Frontend (Static) | 2–3 weeks | 1–2 weeks | 🔴 Pending |
+| **3** | CLI `publish` / `install` | 1 week | 1 week | ✅ Done |
+| **3** | Registry Backend (SQLite) | 1–2 weeks | 2–3 weeks | ✅ Done |
+| **3** | Registry Frontend (Static) | 2–3 weeks | 1–2 weeks | ✅ Done (Next.js MVP) |
 | **4** | CLI `run` (Local Exec) | 3–5 days | 1–2 weeks | ✅ Done |
 | **4** | CLI `test` (Benchmarks) | 3–5 days | 1 week | 🔴 Pending |
 | **6** | Server-side CI Runner | 1–2 weeks | 1-2 weeks | 🔴 Pending |
@@ -958,15 +958,15 @@ As a solo developer, building the entire ecosystem takes time. Here is the adjus
 
 - [ ] GitHub repository public
 - [ ] Post on HackerNews, Reddit, Discord communities
-- [ ] `aiskills publish` CLI command
-- [ ] `aiskills install` CLI command
-- [ ] Registry backend API (FastAPI + PostgreSQL)
-- [ ] GitHub OAuth authentication
+- [x] `aiskills publish` CLI command
+- [x] `aiskills install` CLI command
+- [x] Registry backend API (FastAPI + SQLite MVP)
+- [x] GitHub OAuth authentication (MVP + token fallback)
 
 ### Phase 3 — Community (1–2 months)
 
-- [ ] Registry frontend website
-- [ ] `aiskills run` command (local execution)
+- [x] Registry frontend website
+- [x] `aiskills run` command (local execution)
 - [ ] `aiskills test` command (test case runner)
 - [ ] Semantic Kernel exporter
 - [ ] OpenAI function-calling format exporter
@@ -1016,3 +1016,9 @@ No existing skill store or plugin marketplace shows verified performance metrics
 
 *This document should be updated every time a major component is built or the spec is revised.*  
 *Current spec version: v0.1 | Current SDK version: 0.1.0*
+
+---
+
+## Session Update — 2026-03-26
+
+A major auth milestone was completed in this session: the registry now has an end-to-end GitHub OAuth flow spanning FastAPI, the Next.js frontend, and the CLI. The backend now issues and verifies 30-day HS256 JWTs, validates OAuth state, fetches verified primary email from GitHub, tracks `last_login`, and supports both browser and CLI auth callbacks. The frontend gained the missing login page, callback handler, auth context/provider, and authenticated header UI. The CLI login flow was upgraded from manual token paste to a localhost callback handoff.

@@ -18,6 +18,62 @@
 
 ---
 
+### 2026-03-25
+
+#### `[2026-03-25 20:05 IST]` — Registry Frontend MVP + API Contract Alignment
+
+**Type:** Feature / Frontend / API / Documentation
+
+**Summary of changes:**
+- Fixed frontend/backend response contract mismatches:
+  - Frontend now consumes `SkillListResponse` as `{ skills, total_count, page, limit }`.
+  - Added typed frontend API layer (`registry/frontend/lib/api.ts`) and shared response types (`registry/frontend/lib/types.ts`).
+  - Backend skill detail responses now include parsed YAML fields (`inputs`, `outputs`, `execution`, `compatible_with`) from `yaml_content`.
+- Built full skill detail page experience (`/skills/{author}/{id}`):
+  - Header metadata, breadcrumbs, install panel, framework chips, reviewed badge.
+  - Tabs for Overview, Benchmarks, YAML Source, and Versions.
+  - Copy-to-clipboard for install command and YAML source.
+  - Loading skeleton and custom "Skill not found" state.
+- Built full browse/search page experience (`/skills`):
+  - URL-driven filters (`q`, `type`, `tag`, `sort`, `page`) with 300ms debounced search.
+  - Server-backed pagination (page size 12), loading skeletons, empty and error states.
+  - Extended skill cards with reviewed badge, tag preview, execution color coding, and optional downloads.
+- Added backend `GET /skills/tags` endpoint and `TagListResponse` for dynamic tag filters.
+- Added sorting support on list/search endpoints: `newest`, `most_downloaded`, `lowest_latency`.
+- Built registry homepage (`/`) as a server-rendered marketing + discovery page:
+  - Hero, search, CTAs, stats, execution-type cards, recently published skills, how-it-works, framework strip, footer CTA.
+  - Added client `HeroSearch` component for query submit.
+- Built persistent application shell:
+  - Sticky site header with active-route highlighting, external GitHub link, and mobile hamburger menu.
+  - Multi-column site footer with resource/community links and spec badge.
+  - Root layout now uses proper metadata, emoji favicon, and min-height flex shell.
+- Built `/publish` documentation page with:
+  - Prerequisites, six-step publishing flow, execution-type reference cards, rules, and resource links.
+  - Reusable `CodeBlock` UI component with language label and copy button.
+- Verified frontend type safety with `npx tsc --noEmit` after each major set of changes.
+
+**Files created:**
+- `registry/frontend/components/layout/site-header.tsx`
+- `registry/frontend/components/layout/site-footer.tsx`
+- `registry/frontend/components/registry/hero-search.tsx`
+- `registry/frontend/components/ui/code-block.tsx`
+- `registry/frontend/app/skills/[author]/[id]/loading.tsx`
+- `registry/frontend/lib/api.ts`
+- `registry/frontend/lib/types.ts`
+- `registry/frontend/app/publish/page.tsx`
+
+**Files modified:**
+- `registry/api/routers/skills.py`
+- `registry/api/schemas.py`
+- `registry/frontend/app/layout.tsx`
+- `registry/frontend/app/page.tsx`
+- `registry/frontend/app/skills/page.tsx`
+- `registry/frontend/app/skills/[author]/[id]/page.tsx`
+- `registry/frontend/components/registry/skill-card.tsx`
+- `registry/frontend/components/registry/skill-detail-view.tsx`
+
+---
+
 ### 2026-03-20
 
 #### `[2026-03-20 17:03 IST]` — Bug Fixes & Documentation Updates
@@ -283,3 +339,19 @@ These items were built before this changelog was created. Recorded here for comp
 ---
 
 *New entries should be added at the top of the current date section, with the latest change first.*
+
+---
+
+### 2026-03-26 — GitHub OAuth completion
+
+| Item | Status | File(s) |
+|------|--------|---------|
+| Backend JWT verification | ✅ Complete | `registry/api/routers/auth.py` |
+| OAuth state + callback redirect flow | ✅ Complete | `registry/api/routers/auth.py` |
+| Logout endpoint | ✅ Complete | `registry/api/routers/auth.py` |
+| User email + last_login persistence | ✅ Complete | `registry/api/models.py`, `registry/api/database.py` |
+| Frontend login + callback pages | ✅ Complete | `registry/frontend/app/login/page.tsx`, `registry/frontend/app/auth/callback/page.tsx` |
+| Frontend auth context/provider | ✅ Complete | `registry/frontend/lib/auth.tsx`, `registry/frontend/components/providers.tsx`, `registry/frontend/app/layout.tsx` |
+| Dynamic authenticated header | ✅ Complete | `registry/frontend/components/layout/site-header.tsx` |
+| CLI browser login without token paste | ✅ Complete | `sdk/auth_config.py`, `sdk/cli.py` |
+| OAuth env example | ✅ Complete | `registry/api/.env.example` |

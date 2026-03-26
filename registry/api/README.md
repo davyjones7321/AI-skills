@@ -15,18 +15,45 @@ Python 3.10+, pip packages: `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic-settin
 6. Visit `http://localhost:8000/docs` for interactive API docs
 
 ## Auth
-Set `API_TOKENS` in `.env` as a JSON dict mapping tokens to usernames, e.g. `{"dev-token-aiskills": "ai-skills-team"}`. Note that GitHub OAuth replaces this in production.
+GitHub OAuth authentication is used for the registry. The API_TOKENS env variable acts as an administrator fallback if needed.
 
 ## Endpoints
 | Method | Path | Auth Required | Description |
 |--------|------|---------------|-------------|
 | GET | `/skills/` | No | List all skills with pagination |
+| GET | `/skills/tags` | No | Return deduplicated tag list across all published skills |
 | GET | `/skills/search` | No | Search skills by name, description, tag, or execution type |
 | POST | `/skills/` | Yes | Publish a new skill to the registry |
+| GET | `/auth/github` | No | Redirect to GitHub OAuth login |
+| GET | `/auth/github/callback` | No | GitHub OAuth callback |
+| GET | `/auth/me` | Yes | Get the currently logged-in user profile |
+| POST | `/auth/logout` | No | Stateless logout acknowledgement |
 | GET | `/skills/{author}/{skill_id}` | No | Get the latest version of a skill by author and ID |
 | GET | `/skills/{author}/{skill_id}/{version}` | No | Get a specific version of a skill |
 | DELETE | `/skills/{author}/{skill_id}/{version}` | Yes | Yank (delete) a specific version of a skill |
 | GET | `/health` | No | Health check endpoint |
+
+### Response shape highlights
+
+- List/search endpoints return:
+  - `{ skills, total_count, page, limit }`
+- Skill detail endpoints return:
+  - top-level metadata (`id`, `author`, `version`, `name`, `description`, etc.)
+  - raw `yaml_content`
+  - parsed fields from YAML: `inputs`, `outputs`, `execution`, `compatible_with`
+
+### Query parameters
+
+- `GET /skills/`
+  - `page` (default `1`)
+  - `limit` (default `20`, max `100`)
+  - `sort` (`newest`, `most_downloaded`, `lowest_latency`)
+- `GET /skills/search`
+  - `q` (optional text query)
+  - `tag` (optional exact tag)
+  - `type` (`prompt`, `tool_call`, `code`, `chain`)
+  - `page`, `limit`
+  - `sort` (`newest`, `most_downloaded`, `lowest_latency`)
 
 ## Environment Variables
 | Variable | Description |
@@ -35,12 +62,13 @@ Set `API_TOKENS` in `.env` as a JSON dict mapping tokens to usernames, e.g. `{"d
 | `ENVIRONMENT` | Environment mode |
 | `SECRET_KEY` | Secret key for operations |
 | `REGISTRY_URL` | The public URL of the registry |
+| `FRONTEND_URL` | The frontend app URL used after OAuth completes |
 | `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
-| `API_TOKENS` | JSON dictionary mapping tokens to usernames |
+| `JWT_SECRET` | Secret used to sign and verify registry JWTs |
 
 ## Known Limitations (MVP)
 - no rate limiting
 - SQLite only
-- token auth not GitHub OAuth
 - tag filtering is post-processed in Python
+- sorting is currently done in-memory for MVP simplicity

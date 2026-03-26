@@ -711,3 +711,9 @@ def call_endpoint(url, method, headers, params, max_retries=3):
 ---
 
 *This document is a companion to OVERVIEW.md. Update it as items are completed.*
+
+---
+
+## Session Update — 2026-03-26
+
+One of the highest-priority improvement tracks is now closed: registry authentication moved from the old token-matching approach to a proper GitHub OAuth plus JWT flow. The backend now verifies JWTs correctly, the frontend has the missing auth surfaces, and the CLI login loop no longer depends on manual token paste. Follow-on improvements should target auth-adjacent polish rather than basic auth correctness.

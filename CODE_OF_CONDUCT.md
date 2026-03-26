@@ -35,3 +35,9 @@ Examples of unacceptable behavior include:
   address, without their explicit permission
 * Other conduct which could reasonably be considered inappropriate in a
   professional setting
+
+---
+
+## Session Update — 2026-03-26
+
+Repository maintenance note: the registry authentication flow was updated in this session to use GitHub OAuth and JWT-based sessions across the backend, frontend, and CLI. No conduct rules changed; this note exists only to keep the root project documents aligned with the current implementation state.

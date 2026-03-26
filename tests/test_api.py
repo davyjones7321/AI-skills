@@ -1,6 +1,7 @@
 """Quick test for registry API endpoints."""
-import urllib.request
 import json
+import os
+import urllib.request
 
 
 def get(url, headers=None):
@@ -51,10 +52,14 @@ def main():
     print(f"Got: {data['author']}/{data['id']}@{data['version']}")
     print(f"YAML length: {len(data['yaml_content'])} chars")
 
-    # Test 7: Auth
-    print("\n=== Test 7: Auth /auth/me ===")
-    data = get(f"{base}/auth/me", headers={"Authorization": "Bearer dev-token-aiskills"})
-    print(data)
+    token = os.environ.get("TEST_AUTH_TOKEN")
+    if token:
+        print("\n=== Test 7: Auth /auth/me ===")
+        data = get(f"{base}/auth/me", headers={"Authorization": f"Bearer {token}"})
+        print(data)
+    else:
+        print("\n=== Test 7: Auth /auth/me ===")
+        print("Skipped. Set TEST_AUTH_TOKEN to exercise authenticated auth/me.")
 
     print("\n=== All API tests PASSED ===")
 

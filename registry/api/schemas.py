@@ -31,6 +31,10 @@ class Skill(SkillBase):
 
 class SkillDetail(Skill):
     yaml_content: str
+    inputs: List[Dict[str, Any]] = []
+    outputs: List[Dict[str, Any]] = []
+    execution: Dict[str, Any] = {}
+    compatible_with: List[str] = []
 
 
 class SkillListResponse(BaseModel):
@@ -40,5 +44,20 @@ class SkillListResponse(BaseModel):
     limit: int
 
 
+class TagListResponse(BaseModel):
+    tags: List[str]
+
+
 class MessageResponse(BaseModel):
     message: str
+
+
+class AuthUserResponse(BaseModel):
+    github_id: str
+    username: str
+    email: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class LogoutResponse(BaseModel):
+    ok: bool

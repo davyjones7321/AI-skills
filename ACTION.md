@@ -180,7 +180,7 @@ Build 10–15 more skills to show range and validate all execution types.
 
 - [x] **Framework:** FastAPI (Python)
 - [x] **Database:** SQLite (start simple, migrate to PostgreSQL later if needed)
-- [x] **Auth:** Token MVP (personal access tokens for MVP)
+- [x] **Auth:** GitHub OAuth authentication
 - [ ] **Hosting:** Railway.app or Render.com
 
 #### Database Schema
@@ -239,37 +239,43 @@ Build 10–15 more skills to show range and validate all execution types.
 #### Tech Choice (MVP)
 
 - [ ] **Option A (Simpler):** Static site with client-side search using Fuse.js — hosted on GitHub Pages (free)
-- [ ] **Option B (Richer):** Next.js + Tailwind CSS — hosted on Vercel (free tier)
+- [x] **Option B (Richer):** Next.js + Tailwind CSS — hosted on Vercel (free tier)
 
 #### Pages to Build
 
-- [ ] **Homepage** (`/`)
+- [x] **Homepage** (`/`)
   - Search bar
   - Featured skills
   - Stats: total skills, total authors, total downloads
   - Quick-start commands
-- [ ] **Browse skills** (`/skills`)
+- [x] **Browse skills** (`/skills`)
   - Filter by tag, execution type
   - Sort by downloads, newest, name
   - Paginated grid/list of skill cards
-- [ ] **Skill detail page** (`/skills/{author}/{id}`)
+- [x] **Skill detail page** (`/skills/{author}/{id}`)
   - Full schema display (inputs, outputs)
   - Benchmark scores (latency, cost, accuracy)
   - Install command (copy-to-clipboard)
   - Framework compatibility badges
   - Version history dropdown
   - Raw `skill.yaml` viewer
-- [ ] **Publish guide** (`/publish`)
+- [x] **Publish guide** (`/publish`)
   - Step-by-step guide for publishing a skill
   - Link to CLI docs
 
 #### Design
 
-- [ ] Responsive layout (mobile + desktop)
-- [ ] Dark mode
-- [ ] Skill card component with: name, author, tags, execution type badge, download count
-- [ ] Copy-to-clipboard for install commands
+- [x] Responsive layout (mobile + desktop)
+- [x] Dark mode
+- [x] Skill card component with: name, author, tags, execution type badge, download count
+- [x] Copy-to-clipboard for install commands
 - [ ] Syntax highlighting for YAML display
+
+#### App Shell
+
+- [x] Persistent sticky header with mobile navigation and active-route highlighting
+- [x] Persistent footer with docs/community links and spec badge
+- [x] Root layout metadata and favicon update
 
 ---
 
@@ -553,3 +559,13 @@ Each exporter reads a `skill.yaml` and generates native framework code.
 
 *Track progress by checking off items as you complete them.*  
 *Update this file whenever new tasks are identified.*
+
+---
+
+## Session Update — 2026-03-26
+
+- Completed the GitHub OAuth audit follow-up for the registry.
+- Backend auth now verifies JWT signatures instead of matching token strings in the database.
+- Frontend auth pages and provider wiring were added so browser login can round-trip and persist.
+- CLI login now completes through the browser without manual token paste.
+- Added the missing `registry/api/.env.example` for OAuth and JWT configuration.

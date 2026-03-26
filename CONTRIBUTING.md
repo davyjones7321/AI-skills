@@ -39,3 +39,9 @@ Currently, we support exporting to LangChain, AutoGen, and CrewAI. If you use Se
 ## Code of Conduct
 Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
+---
+
+## Session Update — 2026-03-26
+
+The repository auth flow changed in this session. Contributors working on the registry should now assume GitHub OAuth plus JWT-based auth, not database token matching or manual CLI token paste. If you touch registry auth behavior, update the backend, frontend, CLI, and root documentation together so the login flow stays consistent.
+

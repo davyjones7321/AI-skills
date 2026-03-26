@@ -554,10 +554,6 @@ def cmd_install(args):
 
 def cmd_login(args):
     import importlib.util
-    import os
-    import webbrowser
-    import json
-    from urllib import request, error
     sdk_dir = Path(__file__).parent
 
     auth_spec = importlib.util.spec_from_file_location("auth_config", sdk_dir / "auth_config.py")
@@ -586,24 +582,13 @@ def cmd_login(args):
         config.clear_token()
         print(f"\n  OK - Logged out. Token cleared.\n")
     else:
-        base_url = os.environ.get("AISKILLS_REGISTRY_URL", "https://ai-skills-production-f4f0.up.railway.app").rstrip("/")
-        login_url = f"{base_url}/auth/login"
-        print("Opening GitHub login in your browser...")
-        print(login_url)
-        webbrowser.open(login_url)
-        
-        token = input("Paste the token you received: ").strip()
-        
         try:
-            req = request.Request(f"{base_url}/auth/me", headers={"Authorization": f"Bearer {token}"})
-            with request.urlopen(req, timeout=10) as resp:
-                user_data = json.loads(resp.read().decode("utf-8"))
-                username = user_data.get("username", "unknown")
-                config.registry_url = base_url
-                config.save_token(token, username)
-                print("Logged in successfully!")
+            _, username = config.complete_oauth_login()
+            print(f"\n  OK - Logged in as: {username}")
+            print(f"  Token saved to: ~/.aiskills/config.json\n")
         except Exception as e:
-            print(f"Failed to verify token: {e}")
+            print(f"Failed to complete login: {e}")
+            sys.exit(1)
 
 
 # ── INFO ──────────────────────────────────────────────────────────────────────
