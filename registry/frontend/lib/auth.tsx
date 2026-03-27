@@ -9,6 +9,7 @@ interface AuthContextValue {
   isLoading: boolean
   isAuthenticated: boolean
   signOut: () => void
+  refreshUser: () => Promise<void>
 }
 
 const TOKEN_STORAGE_KEY = "ai_skills_token"
@@ -83,12 +84,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
+  const refreshUser = async () => {
+    const token = getStoredToken()
+    if (!token) {
+      setUser(null)
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const nextUser = await getMe()
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
+      window.localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY)
+      setUser(nextUser)
+    } catch {
+      clearStoredToken()
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isLoading,
       isAuthenticated: user !== null,
       signOut,
+      refreshUser,
     }),
     [isLoading, user]
   )

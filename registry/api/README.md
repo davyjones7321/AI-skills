@@ -76,8 +76,8 @@ GitHub OAuth callbacks are built from `BASE_URL`, while post-login browser redir
 
 ### Production notes
 
-- Set `BASE_URL=https://ai-skills-production-f4f0.up.railway.app` in Railway so GitHub OAuth redirects back to the backend callback endpoint.
-- Set `FRONTEND_URL=https://ai-skills-omega.vercel.app` in Railway — this is used for CORS and post-login redirects.
+- Set `BASE_URL=https://ai-skills-sdk.onrender.com` in Render so GitHub OAuth redirects back to the backend callback endpoint.
+- Set `FRONTEND_URL=https://ai-skills-omega.vercel.app` in Render — this is used for CORS and post-login redirects.
 - The CORS allowlist includes `localhost:3000`, `127.0.0.1:3000`, and `settings.frontend_url` (no hardcoded production origins).
 - OAuth anti-CSRF states are persisted in the database (`oauth_states` table) and survive container restarts.
 - The app uses the modern FastAPI `lifespan` context manager instead of the deprecated `@app.on_event("startup")`.

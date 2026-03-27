@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://ai-skills-production-f4f0.up.railway.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://ai-skills-sdk.onrender.com";
 
 async function check(name, path, validate) {
   const url = new URL(path, API_BASE_URL).toString();

@@ -46,7 +46,7 @@ If not set, the frontend falls back to `http://localhost:8000`.
 For the hosted deployment, set:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://ai-skills-production-f4f0.up.railway.app
+NEXT_PUBLIC_API_URL=https://ai-skills-sdk.onrender.com
 ```
 
 The backend CORS configuration allows requests from `https://ai-skills-omega.vercel.app`.

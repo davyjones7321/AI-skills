@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useAuth } from "@/lib/auth"
 
 const TOKEN_STORAGE_KEY = "ai_skills_token"
 const LEGACY_TOKEN_STORAGE_KEY = "aiskills_token"
@@ -10,6 +11,7 @@ const LEGACY_TOKEN_STORAGE_KEY = "aiskills_token"
 function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { refreshUser } = useAuth()
   const token = searchParams.get("token")
   const next = searchParams.get("next")
 
@@ -18,11 +20,24 @@ function AuthCallbackContent() {
       return
     }
 
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
-    window.localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY)
-    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/"
-    router.replace(safeNext)
-  }, [next, router, token])
+    let cancelled = false
+
+    async function handleCallback() {
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, token!)
+      window.localStorage.removeItem(LEGACY_TOKEN_STORAGE_KEY)
+      await refreshUser()
+      if (!cancelled) {
+        const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/"
+        router.replace(safeNext)
+      }
+    }
+
+    void handleCallback()
+
+    return () => {
+      cancelled = true
+    }
+  }, [next, refreshUser, router, token])
 
   if (!token) {
     return (

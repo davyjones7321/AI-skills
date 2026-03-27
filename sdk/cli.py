@@ -124,7 +124,7 @@ MIT
 
 DEFAULT_REGISTRY_URL = os.environ.get(
     "AISKILLS_REGISTRY_URL",
-    "https://ai-skills-production-f4f0.up.railway.app",
+    "https://ai-skills-sdk.onrender.com",
 )
 
 def _resolve_registry_url(config=None) -> str:

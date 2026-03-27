@@ -110,7 +110,7 @@ aiskills run skill.yaml --input-file input.json --execute
 
 ```bash
 # Optional: override the default hosted registry for this shell
-export AISKILLS_REGISTRY_URL=https://ai-skills-production-f4f0.up.railway.app
+export AISKILLS_REGISTRY_URL=https://ai-skills-sdk.onrender.com
 
 # Authenticate via GitHub OAuth
 aiskills login
@@ -123,7 +123,7 @@ aiskills publish skill.yaml
 
 ```bash
 # Optional: override the default hosted registry for this shell
-export AISKILLS_REGISTRY_URL=https://ai-skills-production-f4f0.up.railway.app
+export AISKILLS_REGISTRY_URL=https://ai-skills-sdk.onrender.com
 
 # Download a published skill to your local workspace
 aiskills install ai-skills-team/summarize-document
@@ -229,7 +229,7 @@ GitHub OAuth implementation for the registry was completed in this session acros
 
 ## Session Update — 2026-03-27
 
-The hosted registry configuration was tightened up in this session. The backend GitHub OAuth callback URL is now built from `BASE_URL`, so production callbacks point back to the backend itself instead of the frontend. The API docs and example env file were updated with `BASE_URL`, the backend CORS allowlist now includes `https://ai-skills-omega.vercel.app`, and the CLI registry commands now honor `AISKILLS_REGISTRY_URL` with a default fallback of `https://ai-skills-production-f4f0.up.railway.app`.
+The hosted registry configuration was tightened up in this session. The backend GitHub OAuth callback URL is now built from `BASE_URL`, so production callbacks point back to the backend itself instead of the frontend. The API docs and example env file were updated with `BASE_URL`, the backend CORS allowlist now includes `https://ai-skills-omega.vercel.app`, and the CLI registry commands now honor `AISKILLS_REGISTRY_URL` with a default fallback of `https://ai-skills-sdk.onrender.com`.
 
 ## Session Update — 2026-03-27 (Production Hardening)
 

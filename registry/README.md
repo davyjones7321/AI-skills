@@ -27,7 +27,7 @@ The registry frontend is now implemented in `registry/frontend` with:
 
 ```bash
 # Optional: override the registry host for this shell
-export AISKILLS_REGISTRY_URL=https://ai-skills-production-f4f0.up.railway.app
+export AISKILLS_REGISTRY_URL=https://ai-skills-sdk.onrender.com
 
 # Install latest version
 aiskills install ai-skills-team/summarize-document
@@ -100,18 +100,18 @@ POST /skills                            Publish a skill (authenticated)
 
 ```bash
 # List all skills
-curl https://ai-skills-production-f4f0.up.railway.app/skills
+curl https://ai-skills-sdk.onrender.com/skills
 
 # List all tags
-curl https://ai-skills-production-f4f0.up.railway.app/skills/tags
+curl https://ai-skills-sdk.onrender.com/skills/tags
 
 # Get a specific skill
-curl https://ai-skills-production-f4f0.up.railway.app/skills/ai-skills-team/summarize-document
+curl https://ai-skills-sdk.onrender.com/skills/ai-skills-team/summarize-document
 
 # Search
-curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?q=summarize"
-curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?tag=nlp"
-curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?type=code&sort=lowest_latency"
+curl "https://ai-skills-sdk.onrender.com/skills/search?q=summarize"
+curl "https://ai-skills-sdk.onrender.com/skills/search?tag=nlp"
+curl "https://ai-skills-sdk.onrender.com/skills/search?type=code&sort=lowest_latency"
 ```
 
 The CLI uses `AISKILLS_REGISTRY_URL` when you need to point `install`, `publish`, or login-related flows at a different registry host.

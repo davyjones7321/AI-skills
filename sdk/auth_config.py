@@ -22,7 +22,7 @@ from pathlib import Path
 from urllib import error, request
 from urllib.parse import parse_qs, urlencode, urlparse
 
-DEFAULT_REGISTRY_URL = os.environ.get("AISKILLS_REGISTRY_URL", "https://ai-skills-production-f4f0.up.railway.app")
+DEFAULT_REGISTRY_URL = os.environ.get("AISKILLS_REGISTRY_URL", "https://ai-skills-sdk.onrender.com")
 CONFIG_DIR = Path.home() / ".aiskills"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
