@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     debug: bool = True
     secret_key: str = "super-secret-key-change-this-in-prod"
 
+    base_url: str = "http://localhost:8000"
+
     # Registry
     registry_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:3000"

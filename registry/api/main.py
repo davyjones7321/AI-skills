@@ -22,6 +22,7 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:8000",
+    "https://ai-skills-omega.vercel.app",
     os.getenv("FRONTEND_URL", ""),
     settings.frontend_url,
     "https://your-vercel-app.vercel.app",

@@ -61,6 +61,7 @@ GitHub OAuth authentication is used for the registry. The API_TOKENS env variabl
 | `DATABASE_URL` | Database connection URL |
 | `ENVIRONMENT` | Environment mode |
 | `SECRET_KEY` | Secret key for operations |
+| `BASE_URL` | Backend public base URL used to build OAuth callback URLs |
 | `REGISTRY_URL` | The public URL of the registry |
 | `FRONTEND_URL` | The frontend app URL used after OAuth completes |
 | `GITHUB_CLIENT_ID` | GitHub OAuth client ID |

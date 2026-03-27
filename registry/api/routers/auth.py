@@ -20,6 +20,10 @@ oauth_states: Dict[str, Dict[str, object]] = {}
 OAUTH_STATE_TTL_SECONDS = 300
 
 
+def _github_callback_redirect_uri() -> str:
+    return f"{settings.base_url.rstrip('/')}/auth/github/callback"
+
+
 def _cleanup_expired_oauth_states() -> None:
     now = time.time()
     expired = [
@@ -129,7 +133,7 @@ def login_with_github(
         {
             "client_id": settings.GITHUB_CLIENT_ID,
             "scope": "read:user user:email",
-            "redirect_uri": f"{settings.registry_url.rstrip('/')}/auth/github/callback",
+            "redirect_uri": _github_callback_redirect_uri(),
             "state": state,
         }
     )
@@ -163,7 +167,7 @@ async def callback(
                 "client_id": settings.GITHUB_CLIENT_ID,
                 "client_secret": settings.GITHUB_CLIENT_SECRET,
                 "code": code,
-                "redirect_uri": f"{settings.registry_url.rstrip('/')}/auth/github/callback",
+                "redirect_uri": _github_callback_redirect_uri(),
             },
             headers={"Accept": "application/json"},
         )
