@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CheckCircle2 } from "lucide-react"
+import { AlertTriangle, CheckCircle2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -74,14 +74,14 @@ export default function PublishPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Python 3.8+ installed</CardTitle>
-                <CardDescription>Use Python 3.8 or newer so the CLI and SDK run correctly.</CardDescription>
+                <CardTitle className="text-base">Python 3.10+ installed</CardTitle>
+                <CardDescription>Use Python 3.10 or newer so the CLI and SDK run correctly.</CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">ai-skills-sdk installed via pip</CardTitle>
-                <CardDescription>Install the CLI globally or in your project environment using pip.</CardDescription>
+                <CardTitle className="text-base">Clone the repo &amp; install SDK</CardTitle>
+                <CardDescription>Clone the ai-skills repo and install the SDK locally with pip.</CardDescription>
               </CardHeader>
             </Card>
             <Card>
@@ -93,6 +93,27 @@ export default function PublishPage() {
           </div>
         </section>
 
+        <div className="mt-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700/50 dark:bg-amber-950/30 dark:text-amber-200">
+          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+          <div>
+            <p className="font-medium">Clone required for now</p>
+            <p className="mt-1">
+              The SDK is not yet published to PyPI. To use the CLI, clone the{" "}
+              <a
+                href="https://github.com/davyjones7321/AI-skills"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium underline underline-offset-2 hover:text-amber-700 dark:hover:text-amber-100"
+              >
+                ai-skills repository
+              </a>{" "}
+              and install locally with <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900/50">pip install -e .</code>. Direct{" "}
+              <code className="rounded bg-amber-100 px-1.5 py-0.5 font-mono text-xs dark:bg-amber-900/50">pip install ai-skills-sdk</code>{" "}
+              support is coming soon.
+            </p>
+          </div>
+        </div>
+
         <Separator className="my-10" />
 
         <section className="space-y-6">
@@ -101,9 +122,9 @@ export default function PublishPage() {
           <div className="space-y-8">
             <div className="relative pl-14">
               <div className="absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border bg-background text-sm font-semibold">1</div>
-              <h3 className="text-lg font-semibold">Install the CLI</h3>
-              <p className="mb-3 mt-1 text-sm text-zinc-600 dark:text-zinc-300">Install the ai-skills SDK and command-line tools.</p>
-              <CodeBlock language="bash" code={`pip install ai-skills-sdk`} />
+              <h3 className="text-lg font-semibold">Clone &amp; install the CLI</h3>
+              <p className="mb-3 mt-1 text-sm text-zinc-600 dark:text-zinc-300">Clone the repository and install the SDK in editable mode.</p>
+              <CodeBlock language="bash" code={`git clone https://github.com/davyjones7321/AI-skills.git\ncd AI-skills\npip install -e .`} />
             </div>
 
             <div className="relative pl-14">
