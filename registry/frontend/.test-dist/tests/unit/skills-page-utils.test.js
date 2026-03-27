@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const strict_1 = __importDefault(require("node:assert/strict"));
+const skills_page_utils_1 = require("../../lib/skills-page-utils");
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)("3", 1), 3);
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)("0", 1), 1);
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)("-1", 1), 1);
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)("2.5", 1), 1);
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)("abc", 1), 1);
+strict_1.default.equal((0, skills_page_utils_1.parsePositiveInt)(null, 1), 1);
+strict_1.default.equal((0, skills_page_utils_1.startEndText)(0, 1, 12), "Showing 0 of 0 skills");
+strict_1.default.equal((0, skills_page_utils_1.startEndText)(25, 1, 12), "Showing 1-12 of 25 skills");
+strict_1.default.equal((0, skills_page_utils_1.startEndText)(25, 3, 12), "Showing 25-25 of 25 skills");
+strict_1.default.equal((0, skills_page_utils_1.getFilterDescription)({ q: "sql", type: "code", tag: "database", sort: "most_downloaded" }), 'search "sql", type code, tag database, sorted by most downloaded');
+strict_1.default.equal((0, skills_page_utils_1.getFilterDescription)({ q: "", type: "all", tag: "all", sort: "newest" }), "sorted by newest");
+strict_1.default.deepEqual((0, skills_page_utils_1.getVisiblePageNumbers)(1, 1), []);
+strict_1.default.deepEqual((0, skills_page_utils_1.getVisiblePageNumbers)(1, 5), [1, 2, 3]);
+strict_1.default.deepEqual((0, skills_page_utils_1.getVisiblePageNumbers)(3, 8), [1, 2, 3, 4, 5]);
+strict_1.default.deepEqual((0, skills_page_utils_1.getVisiblePageNumbers)(8, 8), [6, 7, 8]);
+console.log("skills-page-utils tests passed");

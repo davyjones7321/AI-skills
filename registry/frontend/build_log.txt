@@ -1,0 +1,413 @@
+
+> frontend@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 14 errors:
+./app/globals.css
+Error evaluating Node.js code
+Error: It looks like you're trying to use `tailwindcss` directly as a PostCSS plugin. The PostCSS plugin has moved to a separate package, so to continue using Tailwind CSS with PostCSS you'll need to install `@tailwindcss/postcss` and update your PostCSS configuration.
+    [at at (C:\Users\davyj\Desktop\idea\registry\frontend\node_modules\tailwindcss\dist\lib.js:38:1643)]
+    at turbopack:///[turbopack-node]/transforms/postcss.ts:56:14 [C:\Users\davyj\Desktop\idea\registry\frontend\.next\build\chunks\[root-of-the-server]__51225daf._.js:140:20]
+    [at <anonymous>]
+    at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33) [C:\Users\davyj\Desktop\idea\registry\frontend\.next\build\chunks\[root-of-the-server]__51225daf._.js:130:35]
+    at run (turbopack:///[turbopack-node]/ipc/evaluate.ts:77:20) [C:\Users\davyj\Desktop\idea\registry\frontend\.next\build\chunks\[root-of-the-server]__974941ed._.js:429:26]
+    [at process.processTicksAndRejections (node:internal/process/task_queues:103:5)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+./components/registry/skill-detail-view.tsx:5:1
+Module not found: Can't resolve '@/components/ui/separator'
+  3 | import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  4 | import { Badge } from "@/components/ui/badge"
+> 5 | import { Separator } from "@/components/ui/separator"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 | import { InstallCmd } from "@/components/registry/install-cmd"
+  7 | import { Markdown } from "@/components/registry/markdown" // We will create this
+  8 | import { Check, ShieldCheck } from "lucide-react"
+
+Import map: aliased to relative './components/ui/separator' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/registry/skill-detail-view.tsx
+    ./app/skills/[author]/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/registry/skill-card.tsx:12:1
+Module not found: Can't resolve '@/lib/utils'
+  10 | } from "@/components/ui/card"
+  11 | import { Download, Zap, Box, Code, Link2 } from "lucide-react"
+> 12 | import { cn } from "@/lib/utils"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  13 |
+  14 | export interface SkillCardProps {
+  15 |     id: string
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import trace:
+  Server Component:
+    ./components/registry/skill-card.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/badge.tsx:4:1
+Module not found: Can't resolve '@/lib/utils'
+  2 | import { cva, type VariantProps } from "class-variance-authority"
+  3 |
+> 4 | import { cn } from "@/lib/utils"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | const badgeVariants = cva(
+  7 |   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import traces:
+  Server Component:
+    ./components/ui/badge.tsx
+    ./components/registry/skill-card.tsx
+    ./app/page.tsx
+
+  Client Component Browser:
+    ./components/ui/badge.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/badge.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/button.tsx:5:1
+Module not found: Can't resolve '@/lib/utils'
+  3 | import { cva, type VariantProps } from "class-variance-authority"
+  4 |
+> 5 | import { cn } from "@/lib/utils"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | const buttonVariants = cva(
+  8 |   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import traces:
+  Server Component:
+    ./components/ui/button.tsx
+    ./app/page.tsx
+
+  Client Component Browser:
+    ./components/ui/button.tsx [Client Component Browser]
+    ./components/registry/install-cmd.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/button.tsx [Client Component SSR]
+    ./components/registry/install-cmd.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/card.tsx:3:1
+Module not found: Can't resolve '@/lib/utils'
+  1 | import * as React from "react"
+  2 |
+> 3 | import { cn } from "@/lib/utils"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const Card = React.forwardRef<
+  6 |   HTMLDivElement,
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import traces:
+  Server Component:
+    ./components/ui/card.tsx
+    ./components/registry/skill-card.tsx
+    ./app/page.tsx
+
+  Client Component Browser:
+    ./components/ui/card.tsx [Client Component Browser]
+    ./components/registry/install-cmd.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/card.tsx [Client Component SSR]
+    ./components/registry/install-cmd.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/input.tsx:3:1
+Module not found: Can't resolve '@/lib/utils'
+  1 | import * as React from "react"
+  2 |
+> 3 | import { cn } from "@/lib/utils"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  6 |   ({ className, type, ...props }, ref) => {
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/ui/input.tsx [Client Component Browser]
+    ./components/registry/search-bar.tsx [Client Component Browser]
+    ./components/registry/search-bar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/input.tsx [Client Component SSR]
+    ./components/registry/search-bar.tsx [Client Component SSR]
+    ./components/registry/search-bar.tsx [Server Component]
+    ./app/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/tabs.tsx:6:1
+Module not found: Can't resolve '@/lib/utils'
+  4 | import * as TabsPrimitive from "@radix-ui/react-tabs"
+  5 |
+> 6 | import { cn } from "@/lib/utils"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  7 |
+  8 | const Tabs = TabsPrimitive.Root
+  9 |
+
+Import map: aliased to relative './lib/utils' inside of [project]/
+
+
+Import traces:
+  Client Component Browser:
+    ./components/ui/tabs.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/tabs.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/badge.tsx:2:1
+Module not found: Can't resolve 'class-variance-authority'
+  1 | import * as React from "react"
+> 2 | import { cva, type VariantProps } from "class-variance-authority"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  3 |
+  4 | import { cn } from "@/lib/utils"
+  5 |
+
+
+
+Import traces:
+  Server Component:
+    ./components/ui/badge.tsx
+    ./components/registry/skill-card.tsx
+    ./app/page.tsx
+
+  Client Component Browser:
+    ./components/ui/badge.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/badge.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/ui/button.tsx:3:1
+Module not found: Can't resolve 'class-variance-authority'
+  1 | import * as React from "react"
+  2 | import { Slot } from "@radix-ui/react-slot"
+> 3 | import { cva, type VariantProps } from "class-variance-authority"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 |
+  5 | import { cn } from "@/lib/utils"
+  6 |
+
+
+
+Import traces:
+  Server Component:
+    ./components/ui/button.tsx
+    ./app/page.tsx
+
+  Client Component Browser:
+    ./components/ui/button.tsx [Client Component Browser]
+    ./components/registry/install-cmd.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/ui/button.tsx [Client Component SSR]
+    ./components/registry/install-cmd.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/registry/install-cmd.tsx:4:1
+Module not found: Can't resolve 'lucide-react'
+  2 |
+  3 | import * as React from "react"
+> 4 | import { Check, Copy, Terminal } from "lucide-react"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 |
+  6 | import { Button } from "@/components/ui/button"
+  7 | import { Card } from "@/components/ui/card"
+
+
+
+Import traces:
+  Client Component Browser:
+    ./components/registry/install-cmd.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Client Component Browser]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/registry/install-cmd.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Client Component SSR]
+    ./components/registry/skill-detail-view.tsx [Server Component]
+    ./app/skills/[author]/[id]/page.tsx [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/registry/search-bar.tsx:4:1
+Module not found: Can't resolve 'lucide-react'
+  2 |
+  3 | import * as React from "react"
+> 4 | import { Search } from "lucide-react"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import { Input } from "@/components/ui/input"
+  6 | import { useRouter } from "next/navigation"
+  7 |
+
+
+
+Import trace:
+  Server Component:
+    ./components/registry/search-bar.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/registry/skill-card.tsx:11:1
+Module not found: Can't resolve 'lucide-react'
+   9 |     CardTitle,
+  10 | } from "@/components/ui/card"
+> 11 | import { Download, Zap, Box, Code, Link2 } from "lucide-react"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  12 | import { cn } from "@/lib/utils"
+  13 |
+  14 | export interface SkillCardProps {
+
+
+
+Import trace:
+  Server Component:
+    ./components/registry/skill-card.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./components/registry/skill-detail-view.tsx:8:1
+Module not found: Can't resolve 'lucide-react'
+   6 | import { InstallCmd } from "@/components/registry/install-cmd"
+   7 | import { Markdown } from "@/components/registry/markdown" // We will create this
+>  8 | import { Check, ShieldCheck } from "lucide-react"
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   9 |
+  10 | export interface SkillDetailProps {
+  11 |     skill: any // Typed properly in real app
+
+
+
+Import trace:
+  Server Component:
+    ./components/registry/skill-detail-view.tsx
+    ./app/skills/[author]/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at Module.init (turbopack:///[turbopack-node]/transforms/postcss.ts:43:33) [C:\Users\davyj\Desktop\idea\registry\frontend\.next\build\chunks\[root-of-the-server]__51225daf._.js:130:35])
+    at run (turbopack:///[turbopack-node]/ipc/evaluate.ts:77:20) [C:\Users\davyj\Desktop\idea\registry\frontend\.next\build\chunks\[root-of-the-server]__974941ed._.js:429:26])
+    at <unknown> (./components/registry/skill-detail-view.tsx:5:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/registry/skill-card.tsx:12:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/badge.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/button.tsx:5:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/card.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/input.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/tabs.tsx:6:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/badge.tsx:2:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/ui/button.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/registry/install-cmd.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/registry/search-bar.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/registry/skill-card.tsx:11:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (./components/registry/skill-detail-view.tsx:8:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
