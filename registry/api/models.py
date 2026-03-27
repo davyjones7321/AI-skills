@@ -4,6 +4,15 @@ from registry.api.database import Base
 from datetime import datetime
 
 
+class OAuthState(Base):
+    __tablename__ = "oauth_states"
+
+    state = Column(String, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    cli = Column(Boolean, default=False)
+    next_path = Column(String, nullable=True)
+
+
 class User(Base):
     __tablename__ = "users"
 

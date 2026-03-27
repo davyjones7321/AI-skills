@@ -26,6 +26,9 @@ The registry frontend is now implemented in `registry/frontend` with:
 ## Install a Skill
 
 ```bash
+# Optional: override the registry host for this shell
+export AISKILLS_REGISTRY_URL=https://ai-skills-production-f4f0.up.railway.app
+
 # Install latest version
 aiskills install ai-skills-team/summarize-document
 
@@ -59,14 +62,14 @@ All test cases in your `benchmarks.test_cases` block must pass.
 ### 3. Publish
 
 ```bash
-aiskills publish
+aiskills publish skill.yaml
 ```
 
 This will:
 - Re-validate your `skill.yaml`
 - Run all test cases and record benchmark results
 - Submit to the registry for review
-- Make your skill available at `registry.ai-skills.dev/{author}/{id}`
+- Make your skill available from the configured registry host
 
 ### Publishing rules
 
@@ -97,19 +100,21 @@ POST /skills                            Publish a skill (authenticated)
 
 ```bash
 # List all skills
-curl https://registry.ai-skills.dev/skills
+curl https://ai-skills-production-f4f0.up.railway.app/skills
 
 # List all tags
-curl https://registry.ai-skills.dev/skills/tags
+curl https://ai-skills-production-f4f0.up.railway.app/skills/tags
 
 # Get a specific skill
-curl https://registry.ai-skills.dev/skills/ai-skills-team/summarize-document
+curl https://ai-skills-production-f4f0.up.railway.app/skills/ai-skills-team/summarize-document
 
 # Search
-curl "https://registry.ai-skills.dev/skills/search?q=summarize"
-curl "https://registry.ai-skills.dev/skills/search?tag=nlp"
-curl "https://registry.ai-skills.dev/skills/search?type=code&sort=lowest_latency"
+curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?q=summarize"
+curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?tag=nlp"
+curl "https://ai-skills-production-f4f0.up.railway.app/skills/search?type=code&sort=lowest_latency"
 ```
+
+The CLI uses `AISKILLS_REGISTRY_URL` when you need to point `install`, `publish`, or login-related flows at a different registry host.
 
 ---
 

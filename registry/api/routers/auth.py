@@ -12,11 +12,10 @@ from sqlalchemy.orm import Session
 
 from registry.api.config import settings
 from registry.api.database import get_db
-from registry.api.models import User
+from registry.api.models import User, OAuthState
 from registry.api.schemas import AuthUserResponse, LogoutResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-oauth_states: Dict[str, Dict[str, object]] = {}
 OAUTH_STATE_TTL_SECONDS = 300
 
 
@@ -24,15 +23,10 @@ def _github_callback_redirect_uri() -> str:
     return f"{settings.base_url.rstrip('/')}/auth/github/callback"
 
 
-def _cleanup_expired_oauth_states() -> None:
-    now = time.time()
-    expired = [
-        state
-        for state, payload in oauth_states.items()
-        if now - float(payload["created_at"]) > OAUTH_STATE_TTL_SECONDS
-    ]
-    for state in expired:
-        oauth_states.pop(state, None)
+def _cleanup_expired_oauth_states(db: Session) -> None:
+    cutoff = datetime.utcnow() - timedelta(seconds=OAUTH_STATE_TTL_SECONDS)
+    db.query(OAuthState).filter(OAuthState.created_at < cutoff).delete()
+    db.commit()
 
 
 def _build_jwt(user: User) -> str:
@@ -120,21 +114,27 @@ def _serialize_user(user: User) -> AuthUserResponse:
 def login_with_github(
     cli: bool = Query(False),
     next: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
 ):
     """Redirect the user to GitHub OAuth with a short-lived anti-CSRF state."""
-    _cleanup_expired_oauth_states()
-    state = str(uuid4())
-    oauth_states[state] = {
-        "created_at": time.time(),
-        "cli": cli,
-        "next": next,
-    }
+    _cleanup_expired_oauth_states(db)
+    state_str = str(uuid4())
+    
+    new_state = OAuthState(
+        state=state_str,
+        cli=cli,
+        next_path=next,
+        created_at=datetime.utcnow()
+    )
+    db.add(new_state)
+    db.commit()
+
     params = urlencode(
         {
             "client_id": settings.GITHUB_CLIENT_ID,
             "scope": "read:user user:email",
             "redirect_uri": _github_callback_redirect_uri(),
-            "state": state,
+            "state": state_str,
         }
     )
     return RedirectResponse(f"https://github.com/login/oauth/authorize?{params}")
@@ -148,17 +148,22 @@ async def callback(
     db: Session = Depends(get_db),
 ):
     """Exchange the GitHub code for a JWT and return the appropriate client response."""
-    _cleanup_expired_oauth_states()
-    state_payload = oauth_states.pop(state, None)
-    if not state_payload:
+    _cleanup_expired_oauth_states(db)
+    
+    state_record = db.query(OAuthState).filter(OAuthState.state == state).first()
+    if not state_record:
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state")
 
-    created_at = float(state_payload["created_at"])
-    if time.time() - created_at > OAUTH_STATE_TTL_SECONDS:
+    if datetime.utcnow() - state_record.created_at > timedelta(seconds=OAUTH_STATE_TTL_SECONDS):
+        db.delete(state_record)
+        db.commit()
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state")
-
-    cli = bool(state_payload.get("cli"))
-    next_path = state_payload.get("next")
+        
+    cli = state_record.cli
+    next_path = state_record.next_path
+    
+    db.delete(state_record)
+    db.commit()
 
     async with httpx.AsyncClient() as client:
         token_res = await client.post(

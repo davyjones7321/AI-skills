@@ -17,6 +17,8 @@ Python 3.10+, pip packages: `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic-settin
 ## Auth
 GitHub OAuth authentication is used for the registry. The API_TOKENS env variable acts as an administrator fallback if needed.
 
+GitHub OAuth callbacks are built from `BASE_URL`, while post-login browser redirects use `FRONTEND_URL`.
+
 ## Endpoints
 | Method | Path | Auth Required | Description |
 |--------|------|---------------|-------------|
@@ -56,20 +58,32 @@ GitHub OAuth authentication is used for the registry. The API_TOKENS env variabl
   - `sort` (`newest`, `most_downloaded`, `lowest_latency`)
 
 ## Environment Variables
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | Database connection URL |
-| `ENVIRONMENT` | Environment mode |
-| `SECRET_KEY` | Secret key for operations |
-| `BASE_URL` | Backend public base URL used to build OAuth callback URLs |
-| `REGISTRY_URL` | The public URL of the registry |
-| `FRONTEND_URL` | The frontend app URL used after OAuth completes |
-| `GITHUB_CLIENT_ID` | GitHub OAuth client ID |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth client secret |
-| `JWT_SECRET` | Secret used to sign and verify registry JWTs |
+
+> **Note:** `SECRET_KEY`, `JWT_SECRET`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET` are **required** — the app will not start without them.
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | No (default: `sqlite:///./registry.db`) | Database connection URL |
+| `ENVIRONMENT` | No (default: `development`) | Environment mode |
+| `DEBUG` | No (default: `false`) | Enable debug mode (exposes env in `/health`) |
+| `SECRET_KEY` | **Yes** | Secret key for operations |
+| `BASE_URL` | No (default: `http://localhost:8000`) | Backend public base URL used to build OAuth callback URLs |
+| `FRONTEND_URL` | No (default: `http://localhost:3000`) | The frontend app URL used for CORS and after OAuth completes |
+| `GITHUB_CLIENT_ID` | **Yes** | GitHub OAuth client ID |
+| `GITHUB_CLIENT_SECRET` | **Yes** | GitHub OAuth client secret |
+| `JWT_SECRET` | **Yes** | Secret used to sign and verify registry JWTs |
+| `JWT_EXPIRE_HOURS` | No (default: `720`) | JWT token expiration in hours (30 days) |
+
+### Production notes
+
+- Set `BASE_URL=https://ai-skills-production-f4f0.up.railway.app` in Railway so GitHub OAuth redirects back to the backend callback endpoint.
+- Set `FRONTEND_URL=https://ai-skills-omega.vercel.app` in Railway — this is used for CORS and post-login redirects.
+- The CORS allowlist includes `localhost:3000`, `127.0.0.1:3000`, and `settings.frontend_url` (no hardcoded production origins).
+- OAuth anti-CSRF states are persisted in the database (`oauth_states` table) and survive container restarts.
+- The app uses the modern FastAPI `lifespan` context manager instead of the deprecated `@app.on_event("startup")`.
 
 ## Known Limitations (MVP)
-- no rate limiting
+- No rate limiting
 - SQLite only
-- tag filtering is post-processed in Python
-- sorting is currently done in-memory for MVP simplicity
+- Tag filtering is post-processed in Python
+- Sorting is currently done in-memory for MVP simplicity

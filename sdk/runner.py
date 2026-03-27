@@ -295,7 +295,6 @@ def _run_code(skill: dict, inputs: dict) -> dict:
         "filter": filter, "reversed": reversed,
         "min": min, "max": max, "sum": sum, "abs": abs, "round": round,
         "isinstance": isinstance, "type": type, "hasattr": hasattr,
-        "getattr": getattr,
         "True": True, "False": False, "None": None,
         "print": lambda *a, **k: None,  # no-op print
         "ValueError": ValueError, "TypeError": TypeError, "KeyError": KeyError,

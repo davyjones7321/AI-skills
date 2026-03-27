@@ -56,7 +56,17 @@ If you are downloading and running an ai-skill from the registry:
 
 ---
 
-## 5. Future Plans (v0.2+)
+## 5. Recent Security Hardening (2026-03-27)
+
+The following production-readiness fixes were applied:
+
+- **`getattr` removed from code sandbox:** `getattr` was previously in the `safe_builtins` whitelist for `code`-type skill execution. It has been removed because it enables sandbox escape via attribute chain traversal (e.g., `getattr(getattr(len, '__class__'), '__bases__')[0].__subclasses__()`).
+- **OAuth state persistence:** Anti-CSRF states for the GitHub OAuth flow are now stored in a database table (`OAuthState`) instead of an in-memory dict, preventing loss on server restarts.
+- **Secret defaults removed:** `SECRET_KEY`, `JWT_SECRET`, and GitHub OAuth credentials no longer have fallback defaults — the app will refuse to start without them.
+- **Debug mode off by default:** `debug` now defaults to `False`, preventing stack trace leakage in production.
+- **Health check guarded:** The `/health` endpoint no longer exposes the `environment` field unless `debug=True`.
+
+## 6. Future Plans (v0.2+)
 
 We are actively working on:
 - **Registry verified publishers**: A badge system for verified skill authors.

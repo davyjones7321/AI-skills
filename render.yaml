@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-skills-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn registry.api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        value: https://ai-skills-omega.vercel.app
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: BASE_URL
+        sync: false

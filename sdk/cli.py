@@ -127,13 +127,13 @@ DEFAULT_REGISTRY_URL = os.environ.get(
     "https://ai-skills-production-f4f0.up.railway.app",
 )
 
-
 def _resolve_registry_url(config=None) -> str:
+    from sdk.auth_config import DEFAULT_REGISTRY_URL as AUTH_CONFIG_URL
     if config is not None:
         configured_url = getattr(config, "registry_url", None)
         if isinstance(configured_url, str) and configured_url.strip():
             return configured_url.rstrip("/")
-    return DEFAULT_REGISTRY_URL.rstrip("/")
+    return AUTH_CONFIG_URL.rstrip("/")
 
 
 def cmd_init(args):

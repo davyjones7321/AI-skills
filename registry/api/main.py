@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from registry.api.config import settings
@@ -11,21 +12,24 @@ from registry.api.seed import seed_database
 Base.metadata.create_all(bind=engine)
 run_migrations()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    seed_database()
+    yield
+
+
 app = FastAPI(
     title="ai-skills Registry API",
     version="0.1.0",
-    description="Public registry API for ai-skills"
+    description="Public registry API for ai-skills",
+    lifespan=lifespan
 )
 
 # CORS
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8000",
-    "https://ai-skills-omega.vercel.app",
-    os.getenv("FRONTEND_URL", ""),
     settings.frontend_url,
-    "https://your-vercel-app.vercel.app",
 ]
 
 app.add_middleware(
@@ -39,13 +43,14 @@ app.add_middleware(
 app.include_router(skills.router)
 app.include_router(auth.router)
 
-@app.on_event("startup")
-async def startup_event():
-    seed_database()
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "environment": settings.environment}
+    response = {"status": "ok"}
+    if settings.debug:
+        response["environment"] = settings.environment
+    return response
+
 
 @app.get("/")
 def root():
