@@ -26,6 +26,7 @@ Usage examples:
 
 import sys
 import argparse
+import os
 import yaml
 import json
 from pathlib import Path
@@ -119,6 +120,20 @@ aiskills export skill.yaml --target crewai --output tool.py
 
 MIT
 """
+
+
+DEFAULT_REGISTRY_URL = os.environ.get(
+    "AISKILLS_REGISTRY_URL",
+    "https://ai-skills-production-f4f0.up.railway.app",
+)
+
+
+def _resolve_registry_url(config=None) -> str:
+    if config is not None:
+        configured_url = getattr(config, "registry_url", None)
+        if isinstance(configured_url, str) and configured_url.strip():
+            return configured_url.rstrip("/")
+    return DEFAULT_REGISTRY_URL.rstrip("/")
 
 
 def cmd_init(args):
@@ -380,7 +395,7 @@ def cmd_publish(args):
 
     # Step 5: Dry-run check
     if args.dry_run:
-        print(f"  [4/4] DRY-RUN — would publish to: {config.registry_url}/skills")
+        print(f"  [4/4] DRY-RUN — would publish to: {_resolve_registry_url(config)}/skills")
         print(f"\n  Payload:")
         payload = {
             "id": skill_id,
@@ -414,7 +429,7 @@ def cmd_publish(args):
         "yaml_content": raw_content,
     }).encode("utf-8")
 
-    registry_url = config.registry_url.rstrip("/")
+    registry_url = _resolve_registry_url(config)
     url = f"{registry_url}/skills/"
 
     req = request.Request(
@@ -480,7 +495,7 @@ def cmd_install(args):
     AuthConfig = auth_module.AuthConfig
 
     config = AuthConfig()
-    registry_url = config.registry_url.rstrip("/")
+    registry_url = _resolve_registry_url(config)
 
     # Build API URL
     if version:
