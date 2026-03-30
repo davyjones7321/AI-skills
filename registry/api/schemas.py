@@ -1,6 +1,7 @@
 from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime
+from registry.api.categories import VALID_CATEGORY_SET
 
 
 class SkillBase(BaseModel):
@@ -8,12 +9,22 @@ class SkillBase(BaseModel):
     description: str
     tags: List[str] = []
     exec_type: str
+    category: Optional[str] = None
     benchmarks: Optional[Dict[str, Any]] = None
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        if value not in VALID_CATEGORY_SET:
+            raise ValueError("Invalid category")
+        return value
 
 
 class SkillCreate(SkillBase):
     id: str
-    author: str
+    author: Optional[str] = None
     version: str
     yaml_content: str
 

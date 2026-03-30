@@ -28,6 +28,11 @@ def run_migrations() -> None:
         except Exception:
             pass
 
+        try:
+            connection.exec_driver_sql("ALTER TABLE skills ADD COLUMN category TEXT")
+        except Exception:
+            pass
+
 
 def get_db():
     db = SessionLocal()

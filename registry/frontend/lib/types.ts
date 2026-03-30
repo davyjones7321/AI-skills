@@ -12,6 +12,7 @@ export interface SkillListItem {
   description: string
   tags: string[]
   exec_type: string
+  category: string | null
   benchmarks: SkillBenchmarks | null
   downloads: number
   published_at: string

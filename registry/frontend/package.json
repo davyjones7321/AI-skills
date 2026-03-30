@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "npm run test:unit",
-    "test:unit": "tsc -p tsconfig.test.json && node .test-dist/tests/unit/skills-page-utils.test.js && node .test-dist/tests/unit/skill-detail-utils.test.js",
+    "test:unit": "tsc -p tsconfig.test.json && node .test-dist/tests/unit/skills-page-utils.test.js && node .test-dist/tests/unit/skill-detail-utils.test.js && node .test-dist/tests/unit/publish-utils.test.js",
     "test:live-api": "node tests/live-api-smoke.mjs"
   },
   "dependencies": {

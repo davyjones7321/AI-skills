@@ -25,7 +25,6 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/skills", label: "Browse Skills" },
-  { href: "/publish", label: "Publish" },
   { href: "https://github.com/davyjones7321/AI-skills/blob/main/docs/SPEC.md", label: "Docs", external: true },
   { href: "https://github.com/davyjones7321/AI-skills", label: "GitHub", external: true },
 ]
@@ -39,6 +38,7 @@ export function SiteHeader() {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const { user, isLoading, isAuthenticated, signOut } = useAuth()
+  const publishHref = isAuthenticated ? "/publish" : "/login?next=%2Fpublish"
 
   const authControl = isLoading ? (
     <div className="flex items-center gap-2">
@@ -122,7 +122,12 @@ export function SiteHeader() {
             })}
           </nav>
 
-          <div className="hidden md:block">{authControl}</div>
+          <div className="hidden items-center gap-3 md:flex">
+            <Button asChild size="sm" variant={isAuthenticated ? "default" : "outline"}>
+              <Link href={publishHref}>Publish</Link>
+            </Button>
+            {authControl}
+          </div>
 
           <Button
             type="button"
@@ -175,6 +180,11 @@ export function SiteHeader() {
                 </Link>
               )
             })}
+            <Button asChild size="sm" variant={isAuthenticated ? "default" : "outline"} className="w-fit">
+              <Link href={publishHref} onClick={() => setIsMobileOpen(false)}>
+                Publish
+              </Link>
+            </Button>
             {isLoading ? (
               <div className="flex items-center gap-2 pt-1">
                 <Skeleton className="h-8 w-8 rounded-full" />

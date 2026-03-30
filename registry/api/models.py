@@ -38,6 +38,7 @@ class Skill(Base):
     
     tags = Column(JSON, default=[])
     exec_type = Column(String, nullable=False)
+    category = Column(String, nullable=True)
     benchmarks = Column(JSON, default={})
     
     downloads = Column(Integer, default=0)

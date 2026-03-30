@@ -145,7 +145,11 @@ export function SkillDetailView({ skill }: SkillDetailProps) {
                 <ShieldCheck className="mr-1 h-3 w-3" />
                 Reviewed
               </Badge>
-            ) : null}
+            ) : (
+              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                Unreviewed
+              </Badge>
+            )}
             <Badge variant="outline">Published {formatPublishedDate(skill.published_at)}</Badge>
           </div>
           <div className="flex flex-wrap gap-2">
