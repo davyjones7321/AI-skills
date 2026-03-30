@@ -1044,3 +1044,18 @@ A full production audit was completed and 10 issues were fixed:
 - `runner.py`: Removed `getattr` from code sandbox safe builtins to prevent escape via attribute chain traversal.
 - `cli.py`: `_resolve_registry_url` now delegates to `auth_config.DEFAULT_REGISTRY_URL` to eliminate duplication.
 - `.env.example`: Expanded to document all required production variables.
+## Session Update — 2026-03-26
+
+GitHub OAuth implementation for the registry was completed in this session across the backend, frontend, and CLI. The backend now uses signed JWTs with proper verification, GitHub OAuth state validation, frontend callback redirects, stateless logout, and user email plus last-login persistence. The frontend now includes `/login`, `/auth/callback`, an auth context/provider, and dynamic signed-in header state. The CLI `aiskills login` flow was updated to complete browser-based auth without manual token paste, and `registry/api/.env.example` was added with the required auth variables.
+
+## Session Update — 2026-03-27
+
+The hosted registry configuration was tightened up in this session. The backend GitHub OAuth callback URL is now built from `BASE_URL`, so production callbacks point back to the backend itself instead of the frontend. The API docs and example env file were updated with `BASE_URL`, the backend CORS allowlist now includes `https://ai-skills-omega.vercel.app`, and the CLI registry commands now honor `AISKILLS_REGISTRY_URL` with a default fallback of `https://ai-skills-sdk.onrender.com`.
+
+## Session Update — 2026-03-27 (Production Hardening)
+
+A comprehensive production audit was run and 10 issues were fixed: insecure default secrets removed (now required fields), `debug` defaults to `False`, CORS origins simplified to `settings.frontend_url`, OAuth state moved from in-memory dict to a persistent DB table (`OAuthState`), `getattr` removed from the code sandbox, deprecated `@app.on_event("startup")` replaced with modern `lifespan`, health check no longer exposes `environment` in production, duplicate `DEFAULT_REGISTRY_URL` import consolidated, and `.env.example` updated with all production variables.
+
+## Session Update — 2026-03-28 (Standalone CLI)
+
+The SDK is now published to PyPI as `ai-skills-sdk`. Users can install it directly with `pip install ai-skills-sdk` — no repo clone required. All documentation across `README.md`, `OVERVIEW.md`, `CONTRIBUTING.md`, `registry/README.md`, `registry/api/README.md`, and `docs/LAUNCH_POST.md` has been updated to reflect this. The frontend publish page now shows the correct install steps and includes a clone notice for development contributors. The auth context bug (header not updating after OAuth callback) was also fixed.
