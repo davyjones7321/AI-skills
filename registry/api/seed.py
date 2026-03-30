@@ -47,15 +47,7 @@ SKILL_CATEGORIES = {
 }
 
 
-def _make_json_safe(obj):
-    """Recursively convert date/datetime objects to ISO strings for JSON serialization."""
-    if isinstance(obj, (date, datetime)):
-        return obj.isoformat()
-    if isinstance(obj, dict):
-        return {k: _make_json_safe(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_make_json_safe(item) for item in obj]
-    return obj
+from registry.api.utils import make_json_safe
 
 
 def seed_database():
@@ -135,7 +127,7 @@ def seed_database():
             tags=skill.get("tags", []),
             exec_type=execution.get("type", "prompt"),
             category=category,
-            benchmarks=_make_json_safe(benchmarks) if benchmarks else {},
+            benchmarks=make_json_safe(benchmarks) if benchmarks else {},
             downloads=0,
             reviewed=True,  # Example skills are pre-reviewed
         )

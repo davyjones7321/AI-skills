@@ -10,6 +10,7 @@ from registry.api import models, schemas
 from registry.api.categories import VALID_CATEGORY_SET
 from registry.api.database import get_db
 from registry.api.routers.auth import get_current_user
+from registry.api.utils import make_json_safe
 
 router = APIRouter(prefix="/skills", tags=["skills"])
 VALID_EXEC_TYPES = {"prompt", "tool_call", "code", "chain"}
@@ -428,7 +429,7 @@ async def publish_skill(
         tags=skill.tags,
         exec_type=skill.exec_type,
         category=skill.category,
-        benchmarks=skill.benchmarks,
+        benchmarks=make_json_safe(skill.benchmarks) if skill.benchmarks else None,
         author=author,
     )
     db.add(db_skill)
