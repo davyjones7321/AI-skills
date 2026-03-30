@@ -108,16 +108,19 @@ class AuthConfig:
             def log_message(self, format, *args):  # noqa: A003
                 return
 
-        server = HTTPServer(("127.0.0.1", 0), OAuthCallbackHandler)
-        port = server.server_address[1]
-        callback_url = f"http://127.0.0.1:{port}/callback"
+        # Start server on fixed port 9876 as requested
+        try:
+            server = HTTPServer(("localhost", 9876), OAuthCallbackHandler)
+        except OSError as e:
+            raise RuntimeError(f"Could not start local server on port 9876: {e}")
+        
+        callback_url = "http://localhost:9876/callback"
         login_url = f"{self.registry_url.rstrip('/')}/auth/github?{urlencode({'cli': 'true', 'next': callback_url})}"
 
         server_thread = threading.Thread(target=server.handle_request, daemon=True)
         server_thread.start()
 
-        print("Opening GitHub login in your browser...")
-        print(login_url)
+        print("Opening browser to sign in with GitHub...")
         webbrowser.open(login_url)
 
         completed = done.wait(timeout_seconds)

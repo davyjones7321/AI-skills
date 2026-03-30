@@ -221,7 +221,7 @@ async def callback(
 
         if cli:
             next_url = str(next_path) if isinstance(next_path, str) else None
-            if next_url and (next_url.startswith("http://127.0.0.1:") or next_url.startswith("http://localhost:")):
+            if next_url and ("localhost:9876" in next_url or "127.0.0.1:9876" in next_url):
                 separator = "&" if "?" in next_url else "?"
                 return RedirectResponse(f"{next_url}{separator}{urlencode({'token': jwt_token})}")
             return {"token": jwt_token}
