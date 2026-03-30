@@ -28,7 +28,7 @@ export function getFilterDescription({
   q: string
   type: ExecTypeFilter
   tag: string
-  category: string
+  category?: string
   sort: SortFilter
 }): string {
   const parts: string[] = []
