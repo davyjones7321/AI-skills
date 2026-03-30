@@ -41,3 +41,7 @@ Examples of unacceptable behavior include:
 ## Session Update — 2026-03-26
 
 Repository maintenance note: the registry authentication flow was updated in this session to use GitHub OAuth and JWT-based sessions across the backend, frontend, and CLI. No conduct rules changed; this note exists only to keep the root project documents aligned with the current implementation state.
+
+## Session Update — 2026-03-30
+
+Project milestone note: web publishing and category taxonomy features were shipped in this session, expanding the registry into a browseable hub. No conduct rules changed; this note exists to keep the root documents aligned with major project releases.

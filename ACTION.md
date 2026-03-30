@@ -594,3 +594,16 @@ Ten production issues identified and fixed across the backend, SDK, and configur
 - Fixed placeholder links in `docs/LAUNCH_POST.md` with actual GitHub and Vercel URLs.
 - Fixed auth context bug: header now updates immediately after OAuth callback (no reload needed).
 - Updated frontend publish page: corrected install steps, added clone-required notice box.
+
+## Session Update — 2026-03-30 (Category Taxonomy & Web Publishing)
+
+Two major feature streams were completed in this session:
+- **Category Taxonomy (feature/hub-discovery)**: 
+  - Added a strict 12-category backend taxonomy and updated all db models, endpoints, and the seed script to support it. 
+  - Overhauled the Next.js frontend to display a new 12-card category dashboard on the homepage, dynamic URL-synchronized category filters on the browse page, and category badges across all skill views. 
+  - Fixed SQL/Postgres migration edge cases around the new `category` column.
+- **Web Publishing (feature/web-publishing)**: 
+  - Reworked the `POST /skills` endpoint to accept multipart YAML form uploads. 
+  - Auth checks now automatically enforce GitHub ownership when submitting through the web UI path. 
+  - Replaced the static `/publish` frontend guide with a fully functional interactive publishing studio featuring file drag-and-drop and a guided YAML builder form. 
+  - Fixed Next.js 16 `searchParams` typing bugs and addressed the JSON serialization problem with date-objects in the benchmarks payload by introducing a `make_json_safe` utility.

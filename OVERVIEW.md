@@ -411,10 +411,10 @@ A Next.js website where developers can browse, search, and publish skills is now
 
 **Implemented pages:**
 
-- `/` — Homepage: search bar, featured skills, stats (total skills, total authors)
-- `/skills` — Browse all skills with filters by tag and execution type
-- `/skills/{author}/{id}` — Skill detail page showing: schema, benchmark scores, install command, framework compatibility badges, version view, YAML source
-- `/publish` — Guide for how to publish a skill
+- `/` — Homepage: search bar, featured skills, stats, and a 12-card category grid section
+- `/skills` — Browse all skills with filters by category, tag, and execution type
+- `/skills/{author}/{id}` — Skill detail page showing: schema, benchmarks, install command, framework compatibility, category badge, and YAML source
+- `/publish` — Interactive publishing studio supporting YAML file upload and a guided skill builder form
 
 **Technology:** Next.js + Tailwind CSS (MVP), designed for Vercel deployment.
 
@@ -988,8 +988,9 @@ As a solo developer, building the entire ecosystem takes time. Here is the adjus
 
 ### Phase 5 — Scale (4–6 months)
 
-- [ ] Skill collections and curated packs
+- [x] Skill collections (Category Taxonomy & Hub Discovery)
 - [ ] Web UI for skill testing (no CLI needed)
+- [x] Web UI for publishing (Publishing Studio)
 - [ ] API for third-party framework adapter plugins
 - [ ] Skill analytics dashboard for authors
 - [ ] Enterprise registry (private skills within an org)

@@ -123,6 +123,7 @@ aiskills login
 aiskills publish skill.yaml --dry-run
 
 # Publish your skill to the registry
+# Note: You can also publish via web upload or guided form at /publish
 aiskills publish skill.yaml
 ```
 
@@ -148,10 +149,10 @@ npm run dev
 ```
 
 Then open `http://localhost:3000`:
-- `/` — marketing + discovery homepage
-- `/skills` — browse/search with filters and pagination
+- `/` — marketing + discovery homepage with 12-card category grid
+- `/skills` — browse/search with category filters and pagination
 - `/skills/{author}/{id}` — full skill detail page
-- `/publish` — publishing guide
+- `/publish` — interactive publishing studio (upload YAML or guided form)
 
 ---
 
@@ -184,7 +185,12 @@ ai-skills/
 │   └── exporters/          ← Framework adapters
 └── registry/
     ├── api/                ← FastAPI Registry Backend Server
+    │   ├── categories.py   ← 12-category fixed taxonomy
+    │   └── utils.py        ← Shared utils like make_json_safe
     ├── frontend/           ← Next.js registry web app (homepage, browse, detail, publish)
+    │   ├── lib/skill-categories.ts  ← Shared category constants
+    │   ├── lib/publish-utils.ts     ← Web publishing form utilities
+    │   └── components/registry/publish-studio.tsx ← Interactive publish studio
     └── index.json          ← Prototype registry index
 ```
 
