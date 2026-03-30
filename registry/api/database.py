@@ -8,7 +8,11 @@ from registry.api.categories import VALID_CATEGORIES
 connect_args = {"check_same_thread": False} if "sqlite" in settings.database_url else {}
 
 engine = create_engine(
-    settings.database_url, 
+    settings.database_url,
+    pool_pre_ping=True,        # tests connection before using it
+    pool_recycle=300,          # recycle connections every 5 minutes
+    pool_size=5,
+    max_overflow=10,
     connect_args=connect_args
 )
 
