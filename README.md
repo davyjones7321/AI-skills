@@ -48,6 +48,13 @@ Read our detailed breakdown: **[How ai-skills Compares](./docs/COMPARISON.md)**.
 pip install ai-skills-sdk
 ```
 
+> **Development install:** If you want to contribute or run from source, clone the repo and install in editable mode:
+> ```bash
+> git clone https://github.com/davyjones7321/AI-skills.git
+> cd AI-skills
+> pip install -e .
+> ```
+
 ### Create your first skill
 
 ```bash
@@ -109,11 +116,11 @@ aiskills run skill.yaml --input-file input.json --execute
 ### Publish to the registry
 
 ```bash
-# Optional: override the default hosted registry for this shell
-export AISKILLS_REGISTRY_URL=https://ai-skills-sdk.onrender.com
-
-# Authenticate via GitHub OAuth
+# Authenticate via GitHub OAuth (one-time)
 aiskills login
+
+# Preview what would be published (optional)
+aiskills publish skill.yaml --dry-run
 
 # Publish your skill to the registry
 aiskills publish skill.yaml
@@ -234,3 +241,7 @@ The hosted registry configuration was tightened up in this session. The backend 
 ## Session Update — 2026-03-27 (Production Hardening)
 
 A comprehensive production audit was run and 10 issues were fixed: insecure default secrets removed (now required fields), `debug` defaults to `False`, CORS origins simplified to `settings.frontend_url`, OAuth state moved from in-memory dict to a persistent DB table (`OAuthState`), `getattr` removed from the code sandbox, deprecated `@app.on_event("startup")` replaced with modern `lifespan`, health check no longer exposes `environment` in production, duplicate `DEFAULT_REGISTRY_URL` import consolidated, and `.env.example` updated with all production variables.
+
+## Session Update — 2026-03-28 (Standalone CLI)
+
+The SDK is now published to PyPI as `ai-skills-sdk`. Users can install it directly with `pip install ai-skills-sdk` — no repo clone required. All documentation across `README.md`, `OVERVIEW.md`, `CONTRIBUTING.md`, `registry/README.md`, `registry/api/README.md`, and `docs/LAUNCH_POST.md` has been updated to reflect this. The frontend publish page now shows the correct install steps and includes a clone notice for development contributors. The auth context bug (header not updating after OAuth callback) was also fixed.

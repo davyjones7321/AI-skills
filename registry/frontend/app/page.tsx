@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { listSkills } from "@/lib/api"
+import { SKILL_CATEGORIES } from "@/lib/skill-categories"
 import type { SkillListItem } from "@/lib/types"
 
 type ExecutionType = "prompt" | "tool_call" | "code" | "chain"
@@ -41,6 +42,20 @@ const executionTypeMeta: Record<
 }
 
 const frameworks = ["LangChain", "AutoGen", "CrewAI", "Semantic Kernel", "OpenAI", "Anthropic"]
+const categoryDescriptions: Record<(typeof SKILL_CATEGORIES)[number], string> = {
+  "Frontend Development": "UI workflows, components, and browser-facing automation.",
+  "Backend Development": "Services, business logic, workers, and server-side tasks.",
+  Database: "SQL generation, schema work, and data storage operations.",
+  DevOps: "Deployment, infrastructure, CI/CD, and runtime management.",
+  "Code Review": "Reviewing changes, summarizing diffs, and tightening code quality.",
+  Testing: "Test generation, validation, and quality assurance workflows.",
+  "Data Processing": "Extraction, transformation, parsing, and structured analysis.",
+  "Content & Writing": "Summaries, rewriting, translation, and editorial assistance.",
+  Security: "Audits, hardening, secrets detection, and safer defaults.",
+  "AI & Agents": "Agent orchestration, prompts, and LLM-native task flows.",
+  Utilities: "Helpful transforms and general-purpose developer tools.",
+  "APIs & Integrations": "Third-party services, connectors, and external data sources.",
+}
 
 async function safeListSkills(params: Parameters<typeof listSkills>[0]) {
   try {
@@ -148,6 +163,28 @@ export default async function HomePage() {
               </Link>
             )
           })}
+        </div>
+      </section>
+
+      <section className="container px-4 md:px-6 py-14 space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-bold tracking-tight">Browse by category</h2>
+          <Button asChild variant="link">
+            <Link href="/skills">See every skill →</Link>
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {SKILL_CATEGORIES.map((category) => (
+            <Link key={category} href={`/skills?category=${encodeURIComponent(category)}`}>
+              <Card className="h-full transition-colors hover:border-zinc-400 dark:hover:border-zinc-600">
+                <CardHeader className="space-y-3">
+                  <Badge variant="outline" className="w-fit">{category}</Badge>
+                  <CardTitle className="text-lg">{category}</CardTitle>
+                  <CardDescription>{categoryDescriptions[category]}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
         </div>
       </section>
 

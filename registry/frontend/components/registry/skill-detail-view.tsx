@@ -137,6 +137,11 @@ export function SkillDetailView({ skill }: SkillDetailProps) {
           </div>
           <p className="text-zinc-600 dark:text-zinc-300">{skill.description}</p>
           <div className="flex flex-wrap items-center gap-2">
+            {skill.category ? (
+              <Badge className="bg-zinc-900 text-zinc-50 hover:bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900">
+                {skill.category}
+              </Badge>
+            ) : null}
             <Badge variant="outline" className={executionBadgeClass(skill.exec_type)}>
               {skill.exec_type}
             </Badge>

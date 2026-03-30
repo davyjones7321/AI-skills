@@ -7,9 +7,9 @@ The FastAPI registry backend provides the central hub for discovering, publishin
 Python 3.10+, pip packages: `fastapi`, `uvicorn`, `sqlalchemy`, `pydantic-settings`, `pyyaml`
 
 ## Setup
-1. `cd registry/api`
-2. `pip install fastapi uvicorn sqlalchemy pydantic-settings pyyaml`
-3. Copy `.env.example` to `.env` and configure tokens
+1. `pip install ai-skills-sdk` (or `pip install -e .` from the repo root for development)
+2. `cd registry/api`
+3. Copy `.env.example` to `.env` and configure the required variables
 4. `python -m registry.api.seed` to seed the database
 5. `uvicorn registry.api.main:app --reload` to start the server
 6. Visit `http://localhost:8000/docs` for interactive API docs

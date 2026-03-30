@@ -11,7 +11,6 @@ This script is idempotent — it skips skills that already exist.
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project root to path so we can import registry modules
@@ -20,8 +19,32 @@ sys.path.insert(0, str(project_root))
 
 import yaml
 from datetime import date, datetime
-from registry.api.database import SessionLocal, engine, Base
+from registry.api.database import SessionLocal, engine, Base, run_migrations
 from registry.api import models
+from registry.api.categories import VALID_CATEGORIES
+
+
+SKILL_CATEGORIES = {
+    "summarize-document": "Content & Writing",
+    "extract-invoice": "Data Processing",
+    "classify-sentiment": "Content & Writing",
+    "translate-text": "Content & Writing",
+    "extract-email-data": "Content & Writing",
+    "generate-commit-message": "Code Review",
+    "code-review": "Code Review",
+    "detect-language": "Utilities",
+    "generate-sql": "Database",
+    "summarize-to-tweet": "Content & Writing",
+    "web-search": "APIs & Integrations",
+    "spell-check": "APIs & Integrations",
+    "weather-lookup": "APIs & Integrations",
+    "word-frequency": "Data Processing",
+    "markdown-to-html": "Utilities",
+    "json-to-csv": "Data Processing",
+    "calculate-reading-time": "Utilities",
+    "translate-and-summarize": "Content & Writing",
+    "review-and-fix-code": "Code Review",
+}
 
 
 def _make_json_safe(obj):
@@ -39,6 +62,7 @@ def seed_database():
     """Read all example skills and insert them into the database."""
     # Ensure tables exist
     Base.metadata.create_all(bind=engine)
+    run_migrations()
     
     db = SessionLocal()
     examples_dir = project_root / "examples"
@@ -49,6 +73,10 @@ def seed_database():
     
     skills_added = 0
     skills_skipped = 0
+
+    missing_categories = sorted(set(SKILL_CATEGORIES.values()) - set(VALID_CATEGORIES))
+    if missing_categories:
+        raise ValueError(f"Seed category map contains invalid values: {missing_categories}")
     
     # Find all skill.yaml files in examples/
     skill_dirs = sorted(examples_dir.iterdir())
@@ -73,6 +101,7 @@ def seed_database():
         skill_id = skill.get("id", skill_dir.name)
         version = skill.get("version", "1.0.0")
         author = skill.get("author", "ai-skills-team")
+        category = SKILL_CATEGORIES.get(skill_id)
         
         # Check if already exists
         existing = db.query(models.Skill).filter_by(
@@ -82,7 +111,13 @@ def seed_database():
         ).first()
         
         if existing:
-            print(f"  [SKIP] {author}/{skill_id}@{version} — already exists")
+            if existing.category != category:
+                existing.category = category
+                db.add(existing)
+                db.commit()
+                print(f"  [UPDATE] {author}/{skill_id}@{version} category → {category}")
+            else:
+                print(f"  [SKIP] {author}/{skill_id}@{version} — already exists")
             skills_skipped += 1
             continue
         
@@ -99,6 +134,7 @@ def seed_database():
             yaml_content=raw_content,
             tags=skill.get("tags", []),
             exec_type=execution.get("type", "prompt"),
+            category=category,
             benchmarks=_make_json_safe(benchmarks) if benchmarks else {},
             downloads=0,
             reviewed=True,  # Example skills are pre-reviewed

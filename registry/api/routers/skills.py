@@ -6,6 +6,7 @@ import json
 import yaml
 
 from registry.api import models, schemas
+from registry.api.categories import VALID_CATEGORY_SET
 from registry.api.database import get_db
 from registry.api.routers.auth import get_current_user
 
@@ -55,6 +56,7 @@ def _build_skill_detail(skill: models.Skill) -> schemas.SkillDetail:
         description=skill.description,
         tags=tags,
         exec_type=skill.exec_type,
+        category=skill.category,
         benchmarks=benchmarks,
         downloads=skill.downloads,
         published_at=skill.published_at,
@@ -94,6 +96,7 @@ def _paginate(skills: List[models.Skill], page: int, limit: int) -> List[models.
 def list_skills(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     sort: str = Query("newest", description="Sort order: newest | most_downloaded | lowest_latency"),
     db: Session = Depends(get_db)
 ):
@@ -102,7 +105,13 @@ def list_skills(
     if sort not in valid_sorts:
         raise HTTPException(status_code=400, detail=f"Invalid sort. Must be one of: {', '.join(sorted(valid_sorts))}")
 
-    all_skills = db.query(models.Skill).all()
+    query = db.query(models.Skill)
+    if category:
+        if category not in VALID_CATEGORY_SET:
+            raise HTTPException(status_code=400, detail="Invalid category")
+        query = query.filter(models.Skill.category == category)
+
+    all_skills = query.all()
     sorted_skills = _sort_skills(all_skills, sort)
     total = len(sorted_skills)
     skills = _paginate(sorted_skills, page, limit)
@@ -121,6 +130,7 @@ def search_skills(
     q: Optional[str] = Query(None, description="Search by name or description"),
     tag: Optional[str] = Query(None, description="Filter by tag"),
     type: Optional[str] = Query(None, description="Filter by execution type (prompt, tool_call, code, chain)"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     sort: str = Query("newest", description="Sort order: newest | most_downloaded | lowest_latency"),
@@ -153,6 +163,11 @@ def search_skills(
         if type.lower() not in valid_types:
             raise HTTPException(status_code=400, detail=f"Invalid type. Must be one of: {', '.join(valid_types)}")
         query = query.filter(models.Skill.exec_type == type.lower())
+
+    if category:
+        if category not in VALID_CATEGORY_SET:
+            raise HTTPException(status_code=400, detail="Invalid category")
+        query = query.filter(models.Skill.category == category)
 
     results = query.all()
 
@@ -238,6 +253,7 @@ def publish_skill(
         yaml_content=skill.yaml_content,
         tags=skill.tags,
         exec_type=skill.exec_type,
+        category=skill.category,
         benchmarks=skill.benchmarks,
         author=author,
     )

@@ -8,6 +8,7 @@ type ListSkillsParams = {
   q?: string
   tag?: string
   type?: string
+  category?: string
   page?: number
   limit?: number
   sort?: string
@@ -17,6 +18,7 @@ type SearchSkillsParams = {
   q: string
   tag?: string
   type?: string
+  category?: string
   page?: number
   limit?: number
   sort?: string
@@ -44,10 +46,10 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export async function listSkills(params: ListSkillsParams = {}): Promise<SkillListResponse> {
-  const { q, tag, type, page, limit, sort } = params
-  const hasSearchFilters = Boolean(q || tag || type)
+  const { q, tag, type, category, page, limit, sort } = params
+  const hasSearchFilters = Boolean(q || tag || type || category)
   const path = hasSearchFilters ? "/skills/search" : "/skills/"
-  const url = buildUrl(path, { q, tag, type, page, limit, sort })
+  const url = buildUrl(path, { q, tag, type, category, page, limit, sort })
   return fetchJson<SkillListResponse>(url)
 }
 

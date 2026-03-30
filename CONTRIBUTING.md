@@ -45,3 +45,7 @@ Please note we have a [Code of Conduct](CODE_OF_CONDUCT.md), please follow it in
 
 The repository auth flow changed in this session. Contributors working on the registry should now assume GitHub OAuth plus JWT-based auth, not database token matching or manual CLI token paste. If you touch registry auth behavior, update the backend, frontend, CLI, and root documentation together so the login flow stays consistent.
 
+## Session Update — 2026-03-28 (Standalone CLI)
+
+The SDK is now published to PyPI as `ai-skills-sdk`. Contributors no longer need to clone the repo to use the CLI — `pip install ai-skills-sdk` works directly. The publish page on the frontend has been updated to reflect this. If you are developing on the SDK itself, use `pip install -e .` from the repo root.
+

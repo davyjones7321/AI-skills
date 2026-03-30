@@ -26,17 +26,20 @@ The registry frontend is now implemented in `registry/frontend` with:
 ## Install a Skill
 
 ```bash
-# Optional: override the registry host for this shell
-export AISKILLS_REGISTRY_URL=https://ai-skills-sdk.onrender.com
+# Install the CLI (if not already installed)
+pip install ai-skills-sdk
 
 # Install latest version
 aiskills install ai-skills-team/summarize-document
 
 # Install specific version
 aiskills install ai-skills-team/summarize-document@1.0.0
+
+# Install and auto-export to LangChain
+aiskills install ai-skills-team/summarize-document --export langchain
 ```
 
-This downloads the `skill.yaml` to your local skills directory.
+This downloads the `skill.yaml` to your local `skills/` directory.
 
 ---
 
@@ -49,26 +52,31 @@ aiskills init my-skill
 cd my-skill
 # edit skill.yaml ...
 aiskills validate skill.yaml
+aiskills validate --audit skill.yaml
 ```
 
-### 2. Run tests
+### 2. Authenticate
 
 ```bash
-aiskills test skill.yaml
+aiskills login
 ```
 
-All test cases in your `benchmarks.test_cases` block must pass.
+This opens GitHub OAuth in your browser. Credentials are saved to `~/.aiskills/config.json`.
 
 ### 3. Publish
 
 ```bash
+# Preview first (optional)
+aiskills publish skill.yaml --dry-run
+
+# Publish for real
 aiskills publish skill.yaml
 ```
 
 This will:
 - Re-validate your `skill.yaml`
-- Run all test cases and record benchmark results
-- Submit to the registry for review
+- Run a security audit
+- Submit to the registry
 - Make your skill available from the configured registry host
 
 ### Publishing rules

@@ -22,17 +22,20 @@ export function getFilterDescription({
   q,
   type,
   tag,
+  category,
   sort,
 }: {
   q: string
   type: ExecTypeFilter
   tag: string
+  category: string
   sort: SortFilter
 }): string {
   const parts: string[] = []
   if (q) parts.push(`search "${q}"`)
   if (type !== "all") parts.push(`type ${type}`)
   if (tag !== "all") parts.push(`tag ${tag}`)
+  if (category !== "all") parts.push(`category ${category}`)
   parts.push(`sorted by ${sort.replace(/_/g, " ")}`)
   return parts.join(", ")
 }

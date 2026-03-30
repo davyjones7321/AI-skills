@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Text, Integer, JSON, DateTime, Boolean
+from sqlalchemy import Column, String, Text, Integer, JSON, DateTime, Boolean, CheckConstraint
 from sqlalchemy.sql import func
 from registry.api.database import Base
+from registry.api.categories import VALID_CATEGORIES
 from datetime import datetime
 
 
@@ -27,6 +28,14 @@ class User(Base):
 
 class Skill(Base):
     __tablename__ = "skills"
+    __table_args__ = (
+        CheckConstraint(
+            "category IS NULL OR category IN ({})".format(
+                ", ".join(f"'{category}'" for category in VALID_CATEGORIES)
+            ),
+            name="ck_skills_category_valid",
+        ),
+    )
 
     id = Column(String, primary_key=True, index=True)
     author = Column(String, primary_key=True, index=True)
@@ -38,6 +47,7 @@ class Skill(Base):
     
     tags = Column(JSON, default=[])
     exec_type = Column(String, nullable=False)
+    category = Column(String, nullable=True)
     benchmarks = Column(JSON, default={})
     
     downloads = Column(Integer, default=0)

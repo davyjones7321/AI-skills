@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getTags, listSkills } from "@/lib/api"
+import { SKILL_CATEGORIES, isSkillCategory } from "@/lib/skill-categories"
 import type { SkillListItem } from "@/lib/types"
 import {
   EXEC_TYPES,
@@ -53,6 +54,8 @@ function SkillsPageContent() {
     ? (typeRaw as ExecTypeFilter)
     : "all"
   const tag = searchParams.get("tag") ?? "all"
+  const categoryRaw = searchParams.get("category")
+  const category = isSkillCategory(categoryRaw) ? categoryRaw : "all"
   const sortRaw = (searchParams.get("sort") ?? "newest").toLowerCase()
   const sort: SortFilter = SORT_OPTIONS.includes(sortRaw as SortFilter)
     ? (sortRaw as SortFilter)
@@ -70,7 +73,7 @@ function SkillsPageContent() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / serverLimit))
   const shouldShowPagination = totalCount > serverLimit
-  const filterDescription = getFilterDescription({ q, type, tag, sort })
+  const filterDescription = getFilterDescription({ q, type, tag, category, sort })
 
   const updateUrl = useCallback((updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams.toString())
@@ -131,6 +134,7 @@ function SkillsPageContent() {
         q: q || undefined,
         type: type === "all" ? undefined : type,
         tag: tag === "all" ? undefined : tag,
+        category: category === "all" ? undefined : category,
         sort,
         page,
         limit: PAGE_SIZE,
@@ -148,7 +152,7 @@ function SkillsPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [page, q, sort, tag, type])
+  }, [category, page, q, sort, tag, type])
 
   useEffect(() => {
     void fetchSkills()
@@ -210,6 +214,29 @@ function SkillsPageContent() {
               <option value="most_downloaded">Most Downloaded</option>
               <option value="lowest_latency">Lowest Latency</option>
             </select>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {SKILL_CATEGORIES.map((categoryValue) => {
+              const isActive = categoryValue === category
+              return (
+                <Button
+                  key={categoryValue}
+                  type="button"
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
+                  onClick={() =>
+                    updateUrl({
+                      category: isActive ? null : categoryValue,
+                      page: "1",
+                    })
+                  }
+                  className="rounded-full"
+                >
+                  {categoryValue}
+                </Button>
+              )
+            })}
           </div>
 
           <div className="text-sm text-zinc-500">{startEndText(totalCount, serverPage, serverLimit)}</div>

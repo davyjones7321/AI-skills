@@ -18,6 +18,7 @@ export interface SkillCardProps {
     name: string
     description: string
     exec_type: string
+    category?: string | null
     downloads?: number
     reviewed?: boolean
     tags?: string[]
@@ -45,6 +46,7 @@ export function SkillCard({
     name,
     description,
     exec_type,
+    category,
     downloads,
     reviewed,
     tags = [],
@@ -77,6 +79,11 @@ export function SkillCard({
                         {description}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {category ? (
+                            <Badge variant="secondary" className="text-[10px]">
+                                {category}
+                            </Badge>
+                        ) : null}
                         {visibleTags.map((tag) => (
                             <Badge key={tag} variant="outline" className="text-[10px]">
                                 #{tag}

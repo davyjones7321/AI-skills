@@ -18,11 +18,11 @@ assert.equal(startEndText(25, 1, 12), "Showing 1-12 of 25 skills")
 assert.equal(startEndText(25, 3, 12), "Showing 25-25 of 25 skills")
 
 assert.equal(
-  getFilterDescription({ q: "sql", type: "code", tag: "database", sort: "most_downloaded" }),
-  'search "sql", type code, tag database, sorted by most downloaded'
+  getFilterDescription({ q: "sql", type: "code", tag: "database", category: "Utilities", sort: "most_downloaded" }),
+  'search "sql", type code, tag database, category Utilities, sorted by most downloaded'
 )
 assert.equal(
-  getFilterDescription({ q: "", type: "all", tag: "all", sort: "newest" }),
+  getFilterDescription({ q: "", type: "all", tag: "all", category: "all", sort: "newest" }),
   "sorted by newest"
 )
 

@@ -43,11 +43,21 @@ Because executing random code for AI agents is dangerous, `ai-skills` comes with
 
 We are also launching the prototype of the `ai-skills` public registry. We already have 19 high-quality, fully tested example skills ready to download and use today—including everything from invoice data extractors, to conventional commit generators, to markdown converters.
 
+## Get Started
+
+```bash
+pip install ai-skills-sdk
+aiskills init my-skill
+aiskills validate my-skill/skill.yaml
+aiskills export my-skill/skill.yaml --target langchain
+```
+
 ## Get Involved
 We want this to be a community-driven standard. 
 - Star the repo on GitHub to show your support.
 - Contribute an adapter for your favorite framework (Semantic Kernel, LlamaIndex, etc.).
 - Build and publish your own skills!
 
-Check out the repo here: [Link]
-Read the v0.1 Specification: [Link]
+Check out the repo here: [github.com/davyjones7321/AI-skills](https://github.com/davyjones7321/AI-skills)
+Read the v0.1 Specification: [SPEC.md](https://github.com/davyjones7321/AI-skills/blob/main/docs/SPEC.md)
+Browse the Registry: [ai-skills-omega.vercel.app](https://ai-skills-omega.vercel.app)
