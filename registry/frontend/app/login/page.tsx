@@ -3,18 +3,13 @@ import { Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-type LoginPageProps = {
-  searchParams?: {
-    next?: string
-  }
-}
-
-export default function LoginPage({ searchParams }: LoginPageProps) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const params = await searchParams
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
   const oauthUrl = new URL("/auth/github", apiBaseUrl)
 
-  if (searchParams?.next) {
-    oauthUrl.searchParams.set("next", searchParams.next)
+  if (params?.next) {
+    oauthUrl.searchParams.set("next", params.next)
   }
 
   return (

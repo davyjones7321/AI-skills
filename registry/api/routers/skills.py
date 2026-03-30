@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from starlette.datastructures import UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import json
 import yaml
 
@@ -11,6 +12,188 @@ from registry.api.database import get_db
 from registry.api.routers.auth import get_current_user
 
 router = APIRouter(prefix="/skills", tags=["skills"])
+VALID_EXEC_TYPES = {"prompt", "tool_call", "code", "chain"}
+
+
+def _raise_validation_error(message: str) -> None:
+    raise HTTPException(status_code=422, detail=message)
+
+
+def _read_string_field(data: Dict[str, Any], key: str, *, required: bool = True) -> str:
+    value = data.get(key)
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    if required:
+        _raise_validation_error(f"Invalid skill.yaml: missing required field 'skill.{key}'")
+    return ""
+
+
+def _validate_tags(value: Any) -> List[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
+        _raise_validation_error("Invalid skill.yaml: 'skill.tags' must be a list of strings")
+    return [item.strip() for item in value]
+
+
+def _validate_io_rows(value: Any, *, field_name: str, require_required_flag: bool) -> List[Dict[str, Any]]:
+    if not isinstance(value, list) or not value:
+        _raise_validation_error(f"Invalid skill.yaml: 'skill.{field_name}' must contain at least one entry")
+
+    normalized_rows: List[Dict[str, Any]] = []
+    for index, row in enumerate(value, start=1):
+        if not isinstance(row, dict):
+            _raise_validation_error(f"Invalid skill.yaml: 'skill.{field_name}[{index}]' must be an object")
+
+        name = row.get("name")
+        io_type = row.get("type")
+        if not isinstance(name, str) or not name.strip():
+            _raise_validation_error(f"Invalid skill.yaml: 'skill.{field_name}[{index}].name' is required")
+        if not isinstance(io_type, str) or not io_type.strip():
+            _raise_validation_error(f"Invalid skill.yaml: 'skill.{field_name}[{index}].type' is required")
+        if require_required_flag and "required" in row and not isinstance(row.get("required"), bool):
+            _raise_validation_error(f"Invalid skill.yaml: 'skill.{field_name}[{index}].required' must be a boolean")
+
+        normalized_row = dict(row)
+        normalized_row["name"] = name.strip()
+        normalized_row["type"] = io_type.strip()
+        normalized_rows.append(normalized_row)
+
+    return normalized_rows
+
+
+def _validate_execution(value: Any) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        _raise_validation_error("Invalid skill.yaml: 'skill.execution' must be an object")
+
+    execution_type = value.get("type")
+    if not isinstance(execution_type, str) or execution_type not in VALID_EXEC_TYPES:
+        _raise_validation_error("Invalid skill.yaml: 'skill.execution.type' must be one of prompt, tool_call, code, chain")
+
+    if execution_type == "prompt":
+        prompt_template = value.get("prompt_template")
+        if not isinstance(prompt_template, str) or not prompt_template.strip():
+            _raise_validation_error("Invalid skill.yaml: prompt skills require 'skill.execution.prompt_template'")
+    elif execution_type == "tool_call":
+        endpoint = value.get("endpoint")
+        if not isinstance(endpoint, str) or not endpoint.strip():
+            _raise_validation_error("Invalid skill.yaml: tool_call skills require 'skill.execution.endpoint'")
+    elif execution_type == "code":
+        source = value.get("source", value.get("code"))
+        if not isinstance(source, str) or not source.strip():
+            _raise_validation_error("Invalid skill.yaml: code skills require 'skill.execution.source'")
+    elif execution_type == "chain":
+        steps = value.get("steps")
+        if not isinstance(steps, list) or not steps:
+            _raise_validation_error("Invalid skill.yaml: chain skills require at least one 'skill.execution.steps' entry")
+
+    return dict(value)
+
+
+def _extract_skill_from_yaml(raw_yaml: str, author: str) -> Tuple[schemas.SkillCreate, str]:
+    try:
+        parsed_yaml = yaml.safe_load(raw_yaml)
+    except yaml.YAMLError as exc:
+        _raise_validation_error(f"Invalid YAML content: {exc}")
+
+    if not isinstance(parsed_yaml, dict) or "skill" not in parsed_yaml:
+        _raise_validation_error("Invalid skill.yaml: missing top-level 'skill' key")
+
+    skill_block = parsed_yaml.get("skill")
+    if not isinstance(skill_block, dict):
+        _raise_validation_error("Invalid skill.yaml: 'skill' must be an object")
+
+    skill_id = _read_string_field(skill_block, "id")
+    version = _read_string_field(skill_block, "version")
+    name = _read_string_field(skill_block, "name")
+    description = _read_string_field(skill_block, "description")
+    tags = _validate_tags(skill_block.get("tags"))
+    inputs = _validate_io_rows(skill_block.get("inputs"), field_name="inputs", require_required_flag=True)
+    outputs = _validate_io_rows(skill_block.get("outputs"), field_name="outputs", require_required_flag=False)
+    execution = _validate_execution(skill_block.get("execution"))
+
+    category = skill_block.get("category")
+    if category is not None:
+        if not isinstance(category, str) or category not in VALID_CATEGORY_SET:
+            _raise_validation_error("Invalid skill.yaml: 'skill.category' must be one of the supported categories")
+        category = category.strip()
+
+    normalized_skill_block = dict(skill_block)
+    normalized_skill_block["id"] = skill_id
+    normalized_skill_block["version"] = version
+    normalized_skill_block["name"] = name
+    normalized_skill_block["description"] = description
+    normalized_skill_block["author"] = author
+    normalized_skill_block["tags"] = tags
+    normalized_skill_block["inputs"] = inputs
+    normalized_skill_block["outputs"] = outputs
+    normalized_skill_block["execution"] = execution
+    if category is not None:
+        normalized_skill_block["category"] = category
+
+    normalized_yaml = yaml.safe_dump(
+        {"skill": normalized_skill_block},
+        sort_keys=False,
+        allow_unicode=False,
+    )
+
+    benchmarks = normalized_skill_block.get("benchmarks")
+    if benchmarks is not None and not isinstance(benchmarks, dict):
+        _raise_validation_error("Invalid skill.yaml: 'skill.benchmarks' must be an object when provided")
+
+    return (
+        schemas.SkillCreate(
+            id=skill_id,
+            author=author,
+            version=version,
+            name=name,
+            description=description,
+            tags=tags,
+            exec_type=execution["type"],
+            category=category,
+            benchmarks=benchmarks if isinstance(benchmarks, dict) else None,
+            yaml_content=normalized_yaml,
+        ),
+        normalized_yaml,
+    )
+
+
+async def _parse_publish_request(request: Request, author: str) -> schemas.SkillCreate:
+    content_type = request.headers.get("content-type", "").lower()
+
+    if content_type.startswith("multipart/form-data"):
+        form = await request.form()
+        upload = form.get("file")
+        if not isinstance(upload, UploadFile):
+            _raise_validation_error("Missing file upload. Send a multipart form with a 'file' field containing skill.yaml")
+
+        try:
+            raw_bytes = await upload.read()
+            raw_yaml = raw_bytes.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            _raise_validation_error(f"Invalid YAML file encoding: {exc}")
+
+        if not raw_yaml.strip():
+            _raise_validation_error("Uploaded skill.yaml file is empty")
+
+        skill, _ = _extract_skill_from_yaml(raw_yaml, author)
+        return skill
+
+    try:
+        payload = await request.json()
+    except Exception as exc:
+        _raise_validation_error(f"Unable to parse request body: {exc}")
+
+    if not isinstance(payload, dict):
+        _raise_validation_error("Invalid JSON payload")
+
+    try:
+        json_payload = schemas.SkillCreate.model_validate(payload)
+    except Exception as exc:
+        _raise_validation_error(str(exc))
+
+    skill, _ = _extract_skill_from_yaml(json_payload.yaml_content, author)
+    return skill
 
 
 def _build_skill_detail(skill: models.Skill) -> schemas.SkillDetail:
@@ -215,16 +398,15 @@ def list_tags(db: Session = Depends(get_db)):
 # ── PUBLISH ───────────────────────────────────────────────────────────────────
 
 @router.post("/", response_model=schemas.SkillDetail, status_code=201)
-def publish_skill(
-    skill: schemas.SkillCreate,
+async def publish_skill(
+    request: Request,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
     """Publish a new skill to the registry (requires authentication)."""
-    # Override author with authenticated user
     author = current_user.username
+    skill = await _parse_publish_request(request, author)
 
-    # Check if this exact version already exists (immutable versions)
     existing = db.query(models.Skill).filter_by(
         author=author,
         id=skill.id,
@@ -236,14 +418,6 @@ def publish_skill(
             status_code=409,
             detail=f"Skill '{author}/{skill.id}@{skill.version}' already exists. Published versions are immutable."
         )
-
-    try:
-        parsed_yaml = yaml.safe_load(skill.yaml_content)
-    except yaml.YAMLError:
-        raise HTTPException(status_code=422, detail="Invalid YAML content")
-
-    if not isinstance(parsed_yaml, dict) or "skill" not in parsed_yaml:
-        raise HTTPException(status_code=422, detail="Invalid skill.yaml: missing top-level 'skill' key")
 
     db_skill = models.Skill(
         id=skill.id,

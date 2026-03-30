@@ -14,7 +14,3 @@ export const SKILL_CATEGORIES = [
 ] as const
 
 export type SkillCategory = (typeof SKILL_CATEGORIES)[number]
-
-export function isSkillCategory(value: string | null | undefined): value is SkillCategory {
-  return Boolean(value) && SKILL_CATEGORIES.includes(value as SkillCategory)
-}

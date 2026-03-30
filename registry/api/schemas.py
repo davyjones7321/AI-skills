@@ -24,7 +24,7 @@ class SkillBase(BaseModel):
 
 class SkillCreate(SkillBase):
     id: str
-    author: str
+    author: Optional[str] = None
     version: str
     yaml_content: str
 

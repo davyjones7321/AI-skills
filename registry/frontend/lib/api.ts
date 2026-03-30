@@ -24,6 +24,16 @@ type SearchSkillsParams = {
   sort?: string
 }
 
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+  }
+}
+
 function buildUrl(path: string, params?: Record<string, string | number | undefined>) {
   const url = new URL(path, API_BASE_URL)
   if (!params) {
@@ -40,7 +50,16 @@ function buildUrl(path: string, params?: Record<string, string | number | undefi
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { cache: "no-store", ...init })
   if (!res.ok) {
-    throw new Error(`API request failed (${res.status}): ${url}`)
+    let message = `API request failed (${res.status})`
+    try {
+      const payload = await res.json()
+      if (payload && typeof payload.detail === "string") {
+        message = payload.detail
+      }
+    } catch {
+      // Fall back to the default message when the response is not JSON.
+    }
+    throw new ApiError(message, res.status)
   }
   return res.json() as Promise<T>
 }
@@ -84,4 +103,16 @@ export async function getMe(): Promise<AuthUser> {
 export async function getTags(): Promise<TagListResponse> {
   const url = buildUrl("/skills/tags")
   return fetchJson<TagListResponse>(url)
+}
+
+export async function publishSkillFile(file: File): Promise<SkillDetail> {
+  const url = buildUrl("/skills/")
+  const form = new FormData()
+  form.append("file", file)
+  const headers = getAuthHeaders()
+  return fetchJson<SkillDetail>(url, {
+    method: "POST",
+    body: form,
+    headers,
+  })
 }
